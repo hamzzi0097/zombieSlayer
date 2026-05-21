@@ -2,22 +2,32 @@
 #include "ObjectBase.hpp"
 
 // -----------------------------------------------------------------------------
-// [ÇÃ·¹ÀÌ¾î ÄÁÆ®·Ñ·¯ ÄÄÆ÷³ÍÆ®]
-// - Å°º¸µå ÀÔ·ÂÀ» ¹Þ¾Æ º°À» Á¶Á¾ÇÏ´Â ¿¹½Ã ÄÄÆ÷³ÍÆ®
+// [í”Œë ˆì´ì–´ ì»¨íŠ¸ë¡¤ëŸ¬ ì»´í¬ë„ŒíŠ¸]
+// - í‚¤ë³´ë“œ ìž…ë ¥ì„ ë°›ì•„ ë³„ì„ ì¡°ì¢…í•˜ëŠ” ì˜ˆì‹œ ì»´í¬ë„ŒíŠ¸
 // -----------------------------------------------------------------------------
 class PlayerController : public Component
 {
-    // ÀÔ·Â »óÅÂ¸¦ ÀúÀåÇÏ±â À§ÇÑ ¸â¹ö º¯¼ö (³»ºÎ¿ë)
-    XMFLOAT2 moveDir;  // x: ÁÂ¿ì, y: »óÇÏ
-    float    rotDir;   // È¸Àü ¹æÇâ
-    float    zoomDir;  // È®´ë/Ãà¼Ò ¹æÇâ
+    // ìž…ë ¥ ìƒíƒœë¥¼ ì €ìž¥í•˜ê¸° ìœ„í•œ ë©¤ë²„ ë³€ìˆ˜ (ë‚´ë¶€ìš©)
+    XMFLOAT2 moveDir;  // x: ì¢Œìš°, y: ìƒí•˜
+    XMFLOAT2 mouseWorldPos; // ë§ˆìš°ìŠ¤ì»¤ì„œì˜ ê²Œìž„ ì¢Œí‘œê³„
+    HWND hWnd;
+
+    float moveSpeed;
+
+    // ê²Œìž„ ì°½ì˜ ë„ˆë¹„/ë†’ì´
+    int* windowWidth;
+    int* windowHeight;
 
 public:
-    PlayerController() : Component()
+    PlayerController(HWND hWnd, int* width, int* height) : Component()
     {
+        this->hWnd = hWnd;
+        this->windowWidth = width;
+        this->windowHeight = height;
+
         moveDir = { 0, 0 };
-        rotDir = 0.0f;
-        zoomDir = 0.0f;
+        mouseWorldPos = { 0, 0 };
+        moveSpeed = 2.0f;
     }
 
     ~PlayerController()
@@ -28,55 +38,57 @@ public:
     {
     }
 
-    // [Step 1] ÀÔ·Â °¨Áö ¹× »óÅÂ ÀúÀå
+    // [Step 1] ìž…ë ¥ ê°ì§€ ë° ìƒíƒœ ì €ìž¥
     void Input() override
     {
-        // ¸Å ÇÁ·¹ÀÓ ÀÔ·Â »óÅÂ ÃÊ±âÈ­
+        // ë§¤ í”„ë ˆìž„ ìž…ë ¥ ìƒíƒœ ì´ˆê¸°í™”
         moveDir = { 0, 0 };
-        rotDir = 0.0f;
-        zoomDir = 0.0f;
 
-        // ¹æÇâÅ° ÀÔ·Â (ÀÌµ¿)
-        if (GetAsyncKeyState(VK_UP) & 0x8000)    moveDir.y += 1.0f;
-        if (GetAsyncKeyState(VK_DOWN) & 0x8000)  moveDir.y -= 1.0f;
-        if (GetAsyncKeyState(VK_LEFT) & 0x8000)  moveDir.x -= 1.0f;
-        if (GetAsyncKeyState(VK_RIGHT) & 0x8000) moveDir.x += 1.0f;
+        // WASD ìž…ë ¥ (ì´ë™)
 
-        // AD Å° ÀÔ·Â (È¸Àü)
-        if (GetAsyncKeyState('A') & 0x8000) rotDir += 1.0f;
-        if (GetAsyncKeyState('D') & 0x8000) rotDir -= 1.0f;
+        if (GetAsyncKeyState('A') & 0x8000) moveDir.x -= 1.0f;
+        if (GetAsyncKeyState('D') & 0x8000) moveDir.x += 1.0f;
+        if (GetAsyncKeyState('W') & 0x8000) moveDir.y += 1.0f;
+        if (GetAsyncKeyState('S') & 0x8000) moveDir.y -= 1.0f;
 
-        // WS Å° ÀÔ·Â (ÁÜ)
-        if (GetAsyncKeyState('W') & 0x8000) zoomDir -= 1.0f;
-        if (GetAsyncKeyState('S') & 0x8000) zoomDir += 1.0f;
+        UpdateMousePosition();
     }
 
-    // [Step 2] ÀúÀåµÈ »óÅÂ¸¦ ¹ÙÅÁÀ¸·Î µ¥ÀÌÅÍ °»½Å
+    // [Step 2] ì €ìž¥ëœ ìƒíƒœë¥¼ ë°”íƒ•ìœ¼ë¡œ ë°ì´í„° ê°±ì‹ 
     void Update(float dt) override
     {
-        // 1. ¼Óµµ Á¤ÀÇ (»çÀÌÁî ºñ·Ê ¼Óµµ Àû¿ë °¡´É)
-        float speedFactor = pOwner->scale.x;
-        float moveSpeed = 2.0f * speedFactor;
-        float rotateSpeed = 3.0f * speedFactor;
-        float zoomSpeed = 5.0f * speedFactor;
 
-        // 2. À§Ä¡ ¾÷µ¥ÀÌÆ®
-        pOwner->pos.x += moveDir.x * moveSpeed * dt;
-        pOwner->pos.y += moveDir.y * moveSpeed * dt;
+        // ëŒ€ê°ì„  ê²½ìš° ì†ë„ ì¡°ì ˆí•˜ê¸° ìœ„í•œ ë³€ìˆ˜
+        float len = sqrtf(moveDir.x * moveDir.x + moveDir.y * moveDir.y);
 
-        // 3. È¸Àü ¾÷µ¥ÀÌÆ®
-        pOwner->rot.z += rotDir * rotateSpeed * dt;
-
-        // 4. ÁÜ(ZÃà) ¾÷µ¥ÀÌÆ® ¹× Á¦ÇÑ
-        pOwner->pos.z += zoomDir * zoomSpeed * dt;
-
-        if (pOwner->pos.z < -0.9f)
-        {
-            pOwner->pos.z = -0.9f;
+        // ìœ„ì¹˜ ì—…ë°ì´íŠ¸
+        if (len > 0.0f) {
+            pOwner->pos.x += (moveDir.x/len) * moveSpeed * dt;
+            pOwner->pos.y += (moveDir.y/len) * moveSpeed * dt;
         }
+
+        // í”Œë ˆì´ì–´ ì‹œì  ë°©í–¥
+        XMFLOAT2 playerViewPoint = { mouseWorldPos.x - pOwner->pos.x, mouseWorldPos.y - pOwner->pos.y };
+
+        // í”Œë ˆì´ì–´ ë§ˆìš°ìŠ¤ ë°©í–¥ìœ¼ë¡œ íšŒì „
+        float playerAngle = atan2f(playerViewPoint.y, playerViewPoint.x);
+        pOwner->rot.z = playerAngle;
+        //printf("Rotate dir : %.4f\n", pOwner->rot.z);
     }
 
     void Render(GraphicsContext* gfx) override
     {
+
+    }
+
+    void UpdateMousePosition()
+    {
+        POINT mousePos;
+        GetCursorPos(&mousePos);
+        ScreenToClient(hWnd, &mousePos);
+
+        mouseWorldPos.x = ((float)mousePos.x / (float)(*windowWidth)) * 2.0f - 1.0f;
+        mouseWorldPos.y = 1.0f - ((float)mousePos.y / (float)(*windowHeight)) * 2.0f;
+        printf("mouseWorld: %.4f, %.4f\n", mouseWorldPos.x, mouseWorldPos.y);
     }
 };
