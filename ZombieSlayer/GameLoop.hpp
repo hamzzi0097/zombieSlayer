@@ -8,8 +8,9 @@
 class GameLoop {
 public:
     WindowContext win;
-    DeltaTime     timer;
+    DeltaTime timer;
     std::vector<GameObject*> world;
+    std::vector<GameObject*> pendingObjects;
     bool isRunning = true;
 
     GameLoop() {
@@ -19,6 +20,7 @@ public:
     ~GameLoop() {
         for (auto obj : world) delete obj;
         world.clear();
+        pendingObjects.clear();
         GraphicsContext::Destroy();
         LOG_INFO("GameLoop Destroyed.");
     }
@@ -42,17 +44,20 @@ public:
                          SWP_NOMOVE | SWP_NOZORDER);
             GraphicsContext::Get()->Resize(win.Width, win.Height);
         }
-        size_t objsize = world.size();
-        for (size_t i = 0; i < objsize; i++) {
-            world[i]->Input();
-        }
 
+        for (auto obj : world) obj->Input();
     }
 
     void Update() {
         float dt = timer.GetDelta();
+
+        // 생성 예약된 오브젝트를 world로 push_back
+        for (auto obj : pendingObjects) world.push_back(obj);
+        pendingObjects.clear();
+
         for (auto obj : world) obj->Update(dt, GraphicsContext::Get());
 
+        // 죽음 표시된 오브젝트를 world에서 제거
         for (auto obj = world.begin(); obj != world.end(); ) {
             if ((*obj)->isObjDead) {
                 delete *obj;

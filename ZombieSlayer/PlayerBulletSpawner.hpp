@@ -3,9 +3,10 @@
 #include "MeshRenderer.hpp"
 #include "PlayerBullet.hpp"
 
+// 플레이어의 탄환 오브젝트 생성 컴포넌트
 class PlayerBulletSpawner : public Component
 {
-    std::vector<GameObject*>* world;
+    std::vector<GameObject*>* pendingObjects;   // GameLoop update 전에 넣어놓을 임시 vector
     Mesh* bulletMesh;
     Material* bulletMaterial;
 
@@ -14,13 +15,12 @@ class PlayerBulletSpawner : public Component
     int* windowHeight;
 
     bool wasLeftMouseDown;
-    float spawnDelay;
 
 public:
-    PlayerBulletSpawner(std::vector<GameObject*>* world, Mesh* bulletMesh,
+    PlayerBulletSpawner(std::vector<GameObject*>* pendingObjects, Mesh* bulletMesh,
         Material* bulletMaterial, HWND hWnd, int* width, int* height) : Component()
     {
-        this->world = world;
+        this->pendingObjects = pendingObjects;
         this->bulletMesh = bulletMesh;
         this->bulletMaterial = bulletMaterial;
         this->hWnd = hWnd;
@@ -28,7 +28,6 @@ public:
         this->windowHeight = height;
 
         wasLeftMouseDown = false;
-        spawnDelay = 0.5f;
     }
 
     void Start(GraphicsContext* gfx) override
@@ -37,8 +36,10 @@ public:
 
     void Input() override
     {
+        // 마우스를 누르고 있는 매 프레임 발사 방지
         bool isLeftMouseDown = (GetAsyncKeyState(VK_LBUTTON) & 0x8000) != 0;
 
+        // 현재 프레임 처음 눌린 순간만 탄환 생성
         if (isLeftMouseDown && !wasLeftMouseDown)
         {
             SpawnBullet();
@@ -58,10 +59,12 @@ public:
 private:
     XMFLOAT2 GetMousePosition()
     {
+        // 마우스 화면 좌표 -> 현재 게임 창 기준 좌표로 변환
         POINT mousePos;
         GetCursorPos(&mousePos);
         ScreenToClient(hWnd, &mousePos);
 
+        // 게임 월드 좌표를 (-1 ~ 1)로 변환
         XMFLOAT2 mouseWorldPos;
         mouseWorldPos.x = ((float)mousePos.x / (float)(*windowWidth)) * 2.0f - 1.0f;
         mouseWorldPos.y = 1.0f - ((float)mousePos.y / (float)(*windowHeight)) * 2.0f;
@@ -71,13 +74,15 @@ private:
 
     void SpawnBullet()
     {
+        // 현재 마우스 월드 좌표를 기준으로 발사 방향 계산.
         XMFLOAT2 mouseWorldPos = GetMousePosition();
 
         XMFLOAT2 fireDir = { mouseWorldPos.x - pOwner->pos.x, mouseWorldPos.y - pOwner->pos.y };
 
+        // 방향 벡터 정규화 => 탄환 속도를 일정하게 유지
         float len = sqrtf(fireDir.x * fireDir.x + fireDir.y * fireDir.y);
 
-        if (len >= 0.0f)
+        if (len > 0.0f)
         {
             fireDir.x /= len;
             fireDir.y /= len;
@@ -92,9 +97,9 @@ private:
             bullet->AddComponent(new MeshRenderer(bulletMesh, bulletMaterial));
             bullet->AddComponent(new PlayerBullet(fireDir));
 
-            world->push_back(bullet);
+            // world 순회 중 직접 추가하지 않고, 다음 Update에서 추가되도록 예약
+            pendingObjects->push_back(bullet);
         }
-
 
     }
 };

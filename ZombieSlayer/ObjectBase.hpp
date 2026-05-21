@@ -2,7 +2,6 @@
 #include "Framework.hpp"
 #include "GraphicsContext.hpp"
 
-// 전방 선언: "자세한 건 나중에 알려줄게, 일단 이런 클래스가 있어"
 class GameObject;
 
 class Component {

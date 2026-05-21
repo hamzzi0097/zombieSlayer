@@ -81,6 +81,7 @@ public:
 
     }
 
+    // 마우스 위치 업데이트
     void UpdateMousePosition()
     {
         POINT mousePos;
@@ -89,6 +90,6 @@ public:
 
         mouseWorldPos.x = ((float)mousePos.x / (float)(*windowWidth)) * 2.0f - 1.0f;
         mouseWorldPos.y = 1.0f - ((float)mousePos.y / (float)(*windowHeight)) * 2.0f;
-        printf("mouseWorld: %.4f, %.4f\n", mouseWorldPos.x, mouseWorldPos.y);
+        // printf("mouseWorld: %.4f, %.4f\n", mouseWorldPos.x, mouseWorldPos.y);
     }
 };
