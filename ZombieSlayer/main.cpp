@@ -4,6 +4,9 @@
 #include "PlayerControl.hpp"
 #include "PlayerBullet.hpp"
 #include "PlayerBulletSpawner.hpp"
+#include "Logger.hpp"
+
+GraphicsContext* GraphicsContext::s_instance = nullptr;
 
 LRESULT CALLBACK GlobalWndProc(HWND h, UINT m, WPARAM w, LPARAM l) {
     if (m == WM_DESTROY) PostQuitMessage(0);
@@ -31,16 +34,18 @@ std::vector<Vertex> CreateCircleVertices(float radius, int segments, XMFLOAT4 co
 int WINAPI WinMain(HINSTANCE hI, HINSTANCE, LPSTR, int nS)
 {
     GameLoop gEngine;
-    gEngine.Initialize(hI, GlobalWndProc);
+    if (!gEngine.Initialize(hI, GlobalWndProc)) {
+        LOG_ERROR("Engine initialization failed.");
+        return -1;
+    }
 
-    D3D11_INPUT_ELEMENT_DESC ied[] =
-    {
-        { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-        { "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+    D3D11_INPUT_ELEMENT_DESC ied[] = {
+        { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT,    0,  0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+        { "COLOR",    0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 }
     };
 
-    ShaderSet starShaders = gEngine.gfx.CompileAndCreate(L"effect.hlsl", 0, true, ied, 2);
-
+    ShaderSet starShaders = GraphicsContext::Get()->CompileAndCreate(L"effect.hlsl", 0, true, ied, 2);
+  
     std::vector<Vertex> playerVertices =
         CreateCircleVertices(1.0f, 256, XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
 
@@ -78,11 +83,10 @@ int WINAPI WinMain(HINSTANCE hI, HINSTANCE, LPSTR, int nS)
     testBullet->AddComponent(new PlayerBullet({ 1.0f, 0.0f }, 0.5f, 2.0f));
 
     gEngine.world.push_back(testBullet);
-
-
+    
+    LOG_INFO("GameLoop Start!");
     gEngine.Run();
 
     starShaders.Release();
-
     return 0;
 }
