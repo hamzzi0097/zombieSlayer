@@ -45,6 +45,16 @@ public:
     void Update() {
         float dt = timer.GetDelta();
         for (auto obj : world) obj->Update(dt, &gfx);
+
+        for (auto obj = world.begin(); obj != world.end(); ) {
+            if ((*obj)->isObjDead) {
+                delete *obj;
+                obj = world.erase(obj);
+                continue;
+            }
+            obj++;
+
+        }
     }
 
     void Render() {
