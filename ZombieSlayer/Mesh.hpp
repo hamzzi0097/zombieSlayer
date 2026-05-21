@@ -10,7 +10,7 @@ struct Mesh {
         if (vBuffer) { vBuffer->Release(); vBuffer = nullptr; }
     }
 
-    void Create(GraphicsContext* gfx, const std::vector<Vertex>& vertices) {
+    void Create(const std::vector<Vertex>& vertices) {
         vertexCount = (UINT)vertices.size();
 
         D3D11_BUFFER_DESC bd = { 0 };
@@ -21,6 +21,6 @@ struct Mesh {
         D3D11_SUBRESOURCE_DATA sd = { 0 };
         sd.pSysMem = vertices.data();
 
-        gfx->Device->CreateBuffer(&bd, &sd, &vBuffer);
+        GraphicsContext::Get()->Device->CreateBuffer(&bd, &sd, &vBuffer);
     }
 };

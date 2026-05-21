@@ -22,6 +22,7 @@ public:
     XMFLOAT3 pos = { 0, 0, 0 };
     XMFLOAT3 rot = { 0, 0, 0 };
     XMFLOAT3 scale = { 1, 1, 1 };
+    bool isObjDead = false;
     std::vector<Component*> components;
 
     GameObject(float x, float y, float z) {
