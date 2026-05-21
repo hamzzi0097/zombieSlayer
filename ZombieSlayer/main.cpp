@@ -50,12 +50,12 @@ int WINAPI WinMain(HINSTANCE hI, HINSTANCE, LPSTR, int nS)
         CreateCircleVertices(1.0f, 256, XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
 
     Mesh playerMesh;
-    playerMesh.Create(&gEngine.gfx, playerVertices);
+    playerMesh.Create(playerVertices);
 
     ColorMaterial playerMaterial(
         starShaders,
         XMFLOAT4(0.2f, 0.8f, 1.0f, 1.0f),
-        gEngine.gfx.Device
+        GraphicsContext::Get()->Device
     );
 
     // player test
