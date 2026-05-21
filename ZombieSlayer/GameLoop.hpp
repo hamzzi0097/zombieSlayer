@@ -38,8 +38,11 @@ public:
             SetWindowPos(win.hWnd, NULL, 0, 0, rc.right - rc.left, rc.bottom - rc.top, SWP_NOMOVE | SWP_NOZORDER);
             gfx.Resize(win.Width, win.Height);
         }
+        size_t objsize = world.size();
+        for (size_t i = 0; i < objsize; i++) {
+            world[i]->Input();
+        }
 
-        for (auto obj : world) obj->Input();
     }
 
     void Update() {

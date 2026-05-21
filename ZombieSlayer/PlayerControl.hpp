@@ -73,7 +73,7 @@ public:
         // 플레이어 마우스 방향으로 회전
         float playerAngle = atan2f(playerViewPoint.y, playerViewPoint.x);
         pOwner->rot.z = playerAngle;
-        // printf("Rotate dir : %.4f\n", pOwner->rot.z);
+        //printf("Rotate dir : %.4f\n", pOwner->rot.z);
     }
 
     void Render(GraphicsContext* gfx) override
@@ -89,6 +89,6 @@ public:
 
         mouseWorldPos.x = ((float)mousePos.x / (float)(*windowWidth)) * 2.0f - 1.0f;
         mouseWorldPos.y = 1.0f - ((float)mousePos.y / (float)(*windowHeight)) * 2.0f;
-        // printf("mouseWorld: %.4f, %.4f\n", mouseWorldPos.x, mouseWorldPos.y);
+        printf("mouseWorld: %.4f, %.4f\n", mouseWorldPos.x, mouseWorldPos.y);
     }
 };
