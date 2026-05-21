@@ -124,5 +124,3 @@ private:
 
     static GraphicsContext* s_instance;
 };
-
-inline GraphicsContext* GraphicsContext::s_instance = nullptr;

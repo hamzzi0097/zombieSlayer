@@ -31,7 +31,7 @@ public:
     void Input() {
         if (GetAsyncKeyState(VK_ESCAPE) & 0x8000) isRunning = false;
 
-        // 창 크기 변경 (C키)
+        // Resize window (C key)
         if (GetAsyncKeyState('C') & 0x0001) {
             win.Width = 600; win.Height = 600;
             RECT rc = { 0, 0, win.Width, win.Height };
