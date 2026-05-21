@@ -1,10 +1,9 @@
-#pragma once
+﻿#pragma once
 #include <windows.h>
 #include <cstdio>
 #include <cstdarg>
 #include <ctime>
 #include <fstream>
-#include <mutex>
 #include <string>
 
 class Logger {
@@ -20,11 +19,6 @@ public:
     Logger& operator=(const Logger&) = delete;
 
     void SetMinLevel(Level lv) { m_minLevel = lv; }
-
-    void EnableFileLog(const char* path) {
-        std::lock_guard<std::mutex> lock(m_mutex);
-        m_file.open(path, std::ios::out | std::ios::trunc);
-    }
 
     // file, func는 매크로가 __FILE__ / __FUNCTION__으로 자동 주입
     void Log(Level lv, const char* file, const char* func, const char* fmt, ...) {
@@ -49,9 +43,7 @@ public:
 
         char line[1200];
         snprintf(line, sizeof(line), "[%s] %s [%s | %s] %s\n",
-                 timeBuf, TagOf(lv), fileName, func, msgBuf);
-
-        std::lock_guard<std::mutex> lock(m_mutex);
+            timeBuf, TagOf(lv), fileName, func, msgBuf);
 
         SetConsoleColor(lv);
         fputs(line, stdout);
@@ -65,7 +57,6 @@ private:
     Logger() = default;
 
     Level         m_minLevel = Level::Debug;
-    std::mutex    m_mutex;
     std::ofstream m_file;
     HANDLE        m_hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 
