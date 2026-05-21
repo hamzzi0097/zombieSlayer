@@ -9,13 +9,24 @@ class PlayerController : public Component
 {
     // 입력 상태를 저장하기 위한 멤버 변수 (내부용)
     XMFLOAT2 moveDir;  // x: 좌우, y: 상하
+    XMFLOAT2 mouseWorldPos; // 마우스커서의 게임 좌표계
+    HWND hWnd;
+
     float moveSpeed;
 
+    // 게임 창의 너비/높이
+    int* windowWidth;
+    int* windowHeight;
 
 public:
-    PlayerController() : Component()
+    PlayerController(HWND hWnd, int* width, int* height) : Component()
     {
+        this->hWnd = hWnd;
+        this->windowWidth = width;
+        this->windowHeight = height;
+
         moveDir = { 0, 0 };
+        mouseWorldPos = { 0, 0 };
         moveSpeed = 2.0f;
     }
 
@@ -39,6 +50,8 @@ public:
         if (GetAsyncKeyState('D') & 0x8000) moveDir.x += 1.0f;
         if (GetAsyncKeyState('W') & 0x8000) moveDir.y += 1.0f;
         if (GetAsyncKeyState('S') & 0x8000) moveDir.y -= 1.0f;
+
+        UpdateMousePosition();
     }
 
     // [Step 2] 저장된 상태를 바탕으로 데이터 갱신
@@ -58,5 +71,16 @@ public:
     void Render(GraphicsContext* gfx) override
     {
 
+    }
+
+    void UpdateMousePosition()
+    {
+        POINT mousePos;
+        GetCursorPos(&mousePos);
+        ScreenToClient(hWnd, &mousePos);
+
+        mouseWorldPos.x = ((float)mousePos.x / (float)(*windowWidth)) * 2.0f - 1.0f;
+        mouseWorldPos.y = 1.0f - ((float)mousePos.y / (float)(*windowHeight)) * 2.0f;
+        // printf("mouseWorld: %.4f, %.4f\n", mouseWorldPos.x, mouseWorldPos.y);
     }
 };
