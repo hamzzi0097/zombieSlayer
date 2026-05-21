@@ -3,6 +3,7 @@
 #include "GraphicsContext.hpp"
 #include "Timer.hpp"
 #include "ObjectBase.hpp"
+#include "Logger.hpp"
 
 class GameLoop {
 public:
@@ -12,14 +13,14 @@ public:
     bool isRunning = true;
 
     GameLoop() {
-        printf("[Engine] GameLoop Created.\n");
+        LOG_INFO("GameLoop Created.");
     }
 
     ~GameLoop() {
         for (auto obj : world) delete obj;
         world.clear();
         GraphicsContext::Destroy();
-        printf("[Engine] GameLoop Destroyed.\n");
+        LOG_INFO("GameLoop Destroyed.");
     }
 
     bool Initialize(HINSTANCE hInst, LRESULT(CALLBACK* wndProc)(HWND, UINT, WPARAM, LPARAM),

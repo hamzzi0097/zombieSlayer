@@ -2,6 +2,7 @@
 #include "GameLoop.hpp"
 #include "MeshRenderer.hpp"
 #include "PlayerControl.hpp"
+#include "Logger.hpp"
 
 GraphicsContext* GraphicsContext::s_instance = nullptr;
 
@@ -13,7 +14,7 @@ LRESULT CALLBACK GlobalWndProc(HWND h, UINT m, WPARAM w, LPARAM l) {
 int WINAPI WinMain(HINSTANCE hI, HINSTANCE, LPSTR, int) {
     GameLoop gEngine;
     if (!gEngine.Initialize(hI, GlobalWndProc)) {
-        printf("[Error] Engine initialization failed.\n");
+        LOG_ERROR("Engine initialization failed.");
         return -1;
     }
 
@@ -24,6 +25,7 @@ int WINAPI WinMain(HINSTANCE hI, HINSTANCE, LPSTR, int) {
 
     ShaderSet starShaders = GraphicsContext::Get()->CompileAndCreate(L"effect.hlsl", 0, true, ied, 2);
 
+    LOG_INFO("GameLoop Start!");
     gEngine.Run();
 
     starShaders.Release();
