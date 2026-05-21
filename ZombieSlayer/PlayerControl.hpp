@@ -57,15 +57,23 @@ public:
     // [Step 2] 저장된 상태를 바탕으로 데이터 갱신
     void Update(float dt) override
     {
-        // 1. 대각선 경우 속도 조절하기 위한 변수
+
+        // 대각선 경우 속도 조절하기 위한 변수
         float len = sqrtf(moveDir.x * moveDir.x + moveDir.y * moveDir.y);
 
-        // 2. 위치 업데이트
+        // 위치 업데이트
         if (len > 0.0f) {
             pOwner->pos.x += (moveDir.x/len) * moveSpeed * dt;
             pOwner->pos.y += (moveDir.y/len) * moveSpeed * dt;
         }
 
+        // 플레이어 시점 방향
+        XMFLOAT2 playerViewPoint = { mouseWorldPos.x - pOwner->pos.x, mouseWorldPos.y - pOwner->pos.y };
+
+        // 플레이어 마우스 방향으로 회전
+        float playerAngle = atan2f(playerViewPoint.y, playerViewPoint.x);
+        pOwner->rot.z = playerAngle;
+        // printf("Rotate dir : %.4f\n", pOwner->rot.z);
     }
 
     void Render(GraphicsContext* gfx) override
