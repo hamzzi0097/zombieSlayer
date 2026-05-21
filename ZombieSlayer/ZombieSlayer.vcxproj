@@ -126,6 +126,7 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="PlayerBullet.hpp" />
     <ClInclude Include="Framework.hpp" />
     <ClInclude Include="GameLoop.hpp" />
     <ClInclude Include="GraphicsContext.hpp" />
