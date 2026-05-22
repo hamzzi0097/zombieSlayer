@@ -55,7 +55,7 @@ public:
         for (auto obj : pendingObjects) world.push_back(obj);
         pendingObjects.clear();
 
-        for (auto obj : world) obj->Update(dt, GraphicsContext::Get());
+        for (auto obj : world) obj->Update(dt);
 
         // 죽음 표시된 오브젝트를 world에서 제거
         for (auto obj = world.begin(); obj != world.end(); ) {
@@ -80,7 +80,7 @@ public:
         gfx->ImmediateContext->OMSetRenderTargets(1, &gfx->RTV, nullptr);
         gfx->ImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-        for (auto obj : world) obj->Render(gfx);
+        for (auto obj : world) obj->Render();
 
         gfx->SwapChain->Present(gfx->VSync, 0);
     }

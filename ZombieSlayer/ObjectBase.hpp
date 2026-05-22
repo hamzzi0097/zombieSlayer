@@ -41,17 +41,17 @@ public:
         for (auto c : components) c->Input();
     }
 
-    void Update(float dt, GraphicsContext* gfx) {
+    void Update(float dt) {
         for (auto c : components) {
             if (!c->isStarted) {
-                c->Start(gfx);
+                c->Start(GraphicsContext::Get());
                 c->isStarted = true;
             }
             c->Update(dt);
         }
     }
 
-    void Render(GraphicsContext* gfx) {
-        for (auto c : components) c->Render(gfx);
+    void Render() {
+        for (auto c : components) c->Render(GraphicsContext::Get());
     }
 };
