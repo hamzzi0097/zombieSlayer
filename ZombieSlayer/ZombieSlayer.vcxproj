@@ -127,15 +127,20 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="CreateMonster.hpp" />
+    <ClInclude Include="PlayerBullet.hpp" />
     <ClInclude Include="Framework.hpp" />
     <ClInclude Include="GameLoop.hpp" />
     <ClInclude Include="GraphicsContext.hpp" />
     <ClInclude Include="Logger.hpp" />
     <ClInclude Include="Material.hpp" />
+    <ClInclude Include="MeleeMonster.hpp" />
     <ClInclude Include="Mesh.hpp" />
     <ClInclude Include="MeshRenderer.hpp" />
     <ClInclude Include="ObjectBase.hpp" />
+    <ClInclude Include="PlayerBulletSpawner.hpp" />
     <ClInclude Include="PlayerControl.hpp" />
+    <ClInclude Include="RangedMonster.hpp" />
     <ClInclude Include="Timer.hpp" />
     <ClInclude Include="WindowContext.hpp" />
   </ItemGroup>

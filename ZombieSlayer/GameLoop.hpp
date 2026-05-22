@@ -42,13 +42,27 @@ public:
                          SWP_NOMOVE | SWP_NOZORDER);
             GraphicsContext::Get()->Resize(win.Width, win.Height);
         }
+        size_t objsize = world.size();
+        for (size_t i = 0; i < objsize; i++) {
+            world[i]->Input();
+        }
 
-        for (auto obj : world) obj->Input();
     }
 
     void Update() {
         float dt = timer.GetDelta();
         for (auto obj : world) obj->Update(dt, GraphicsContext::Get());
+
+        for (auto obj = world.begin(); obj != world.end(); ) {
+            if ((*obj)->isObjDead) {
+                delete *obj;
+                obj = world.erase(obj);
+                continue;
+            }
+            obj++;
+
+        }
+
     }
 
     void Render() {
