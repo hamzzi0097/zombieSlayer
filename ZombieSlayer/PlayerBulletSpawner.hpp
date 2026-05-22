@@ -30,7 +30,7 @@ public:
         wasLeftMouseDown = false;
     }
 
-    void Start(GraphicsContext* gfx) override
+    void Start() override
     {
     }
 
@@ -52,7 +52,7 @@ public:
     {
     }
 
-    void Render(GraphicsContext* gfx) override
+    void Render() override
     {
     }
 

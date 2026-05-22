@@ -34,7 +34,7 @@ public:
     {
     }
 
-    void Start(GraphicsContext* gfx) override
+    void Start() override
     {
     }
 
@@ -76,7 +76,7 @@ public:
         //printf("Rotate dir : %.4f\n", pOwner->rot.z);
     }
 
-    void Render(GraphicsContext* gfx) override
+    void Render() override
     {
 
     }

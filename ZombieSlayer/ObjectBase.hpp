@@ -9,10 +9,10 @@ public:
     GameObject* pOwner = nullptr;
     bool isStarted = false;
 
-    virtual void Start(GraphicsContext* gfx) = 0;
+    virtual void Start() = 0;
     virtual void Input() = 0;
     virtual void Update(float dt) = 0;
-    virtual void Render(GraphicsContext* gfx) = 0;
+    virtual void Render() = 0;
     virtual ~Component() {}
 };
 
@@ -44,7 +44,7 @@ public:
     void Update(float dt) {
         for (auto c : components) {
             if (!c->isStarted) {
-                c->Start(GraphicsContext::Get());
+                c->Start();
                 c->isStarted = true;
             }
             c->Update(dt);
@@ -52,6 +52,6 @@ public:
     }
 
     void Render() {
-        for (auto c : components) c->Render(GraphicsContext::Get());
+        for (auto c : components) c->Render();
     }
 };
