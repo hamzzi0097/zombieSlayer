@@ -42,27 +42,13 @@ public:
                          SWP_NOMOVE | SWP_NOZORDER);
             GraphicsContext::Get()->Resize(win.Width, win.Height);
         }
-        size_t objsize = world.size();
-        for (size_t i = 0; i < objsize; i++) {
-            world[i]->Input();
-        }
 
+        for (auto obj : world) obj->Input();
     }
 
     void Update() {
         float dt = timer.GetDelta();
-        for (auto obj : world) obj->Update(dt, GraphicsContext::Get());
-
-        for (auto obj = world.begin(); obj != world.end(); ) {
-            if ((*obj)->isObjDead) {
-                delete *obj;
-                obj = world.erase(obj);
-                continue;
-            }
-            obj++;
-
-        }
-
+        for (auto obj : world) obj->Update(dt);
     }
 
     void Render() {
@@ -75,7 +61,7 @@ public:
         gfx->ImmediateContext->OMSetRenderTargets(1, &gfx->RTV, nullptr);
         gfx->ImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-        for (auto obj : world) obj->Render(gfx);
+        for (auto obj : world) obj->Render();
 
         gfx->SwapChain->Present(gfx->VSync, 0);
     }

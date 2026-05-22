@@ -1,7 +1,7 @@
 #pragma once
 #include "ObjectBase.hpp"
 
-// player ÅºÈ¯ °ü·Ã class
+// player íƒ„í™˜ ê´€ë ¨ class
 class PlayerBullet : public Component
 {
     XMFLOAT2 moveDir;
@@ -23,7 +23,7 @@ public:
         }
     }
 
-    void Start(GraphicsContext* gfx) override
+    void Start() override
     {
     }
 
@@ -44,7 +44,7 @@ public:
         }
     }
 
-    void Render(GraphicsContext* gfx) override
+    void Render() override
     {
     }
 };

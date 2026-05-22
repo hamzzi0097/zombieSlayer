@@ -2,7 +2,7 @@
 #include "Framework.hpp"
 #include "GraphicsContext.hpp"
 
-// Àü¹æ ¼±¾ğ: "ÀÚ¼¼ÇÑ °Ç ³ªÁß¿¡ ¾Ë·ÁÁÙ°Ô, ÀÏ´Ü ÀÌ·± Å¬·¡½º°¡ ÀÖ¾î"
+// ì „ë°© ì„ ì–¸: "ìì„¸í•œ ê±´ ë‚˜ì¤‘ì— ì•Œë ¤ì¤„ê²Œ, ì¼ë‹¨ ì´ëŸ° í´ë˜ìŠ¤ê°€ ìˆì–´"
 class GameObject;
 
 class Component {
@@ -10,10 +10,10 @@ public:
     GameObject* pOwner = nullptr;
     bool isStarted = false;
 
-    virtual void Start(GraphicsContext* gfx) = 0;
+    virtual void Start() = 0;
     virtual void Input() = 0;
     virtual void Update(float dt) = 0;
-    virtual void Render(GraphicsContext* gfx) = 0;
+    virtual void Render() = 0;
     virtual ~Component() {}
 };
 
@@ -42,17 +42,17 @@ public:
         for (auto c : components) c->Input();
     }
 
-    void Update(float dt, GraphicsContext* gfx) {
+    void Update(float dt) {
         for (auto c : components) {
             if (!c->isStarted) {
-                c->Start(gfx);
+                c->Start();
                 c->isStarted = true;
             }
             c->Update(dt);
         }
     }
 
-    void Render(GraphicsContext* gfx) {
-        for (auto c : components) c->Render(gfx);
+    void Render() {
+        for (auto c : components) c->Render();
     }
 };

@@ -6,7 +6,7 @@ public:
     ShaderSet shaders;
     Material(ShaderSet s) : shaders(s) {}
     virtual ~Material() {}
-    virtual void Bind(ID3D11DeviceContext* context) = 0;
+    virtual void Bind() = 0;
 };
 
 class ColorMaterial : public Material {
@@ -14,13 +14,13 @@ public:
     XMFLOAT4 color;
     ID3D11Buffer* pColorBuffer = nullptr;
 
-    ColorMaterial(ShaderSet s, XMFLOAT4 col, ID3D11Device* device)
+    ColorMaterial(ShaderSet s, XMFLOAT4 col)
         : Material(s), color(col) {
         D3D11_BUFFER_DESC cbd = { 0 };
         cbd.Usage = D3D11_USAGE_DEFAULT;
         cbd.ByteWidth = sizeof(ColorBuffer);
         cbd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-        device->CreateBuffer(&cbd, nullptr, &pColorBuffer);
+        GraphicsContext::Get()->Device->CreateBuffer(&cbd, nullptr, &pColorBuffer);
     }
 
     virtual ~ColorMaterial() {
@@ -29,7 +29,8 @@ public:
 
     void SetColor(XMFLOAT4 col) { color = col; }
 
-    void Bind(ID3D11DeviceContext* context) override {
+    void Bind() override {
+        ID3D11DeviceContext* context = GraphicsContext::Get()->ImmediateContext;
         context->IASetInputLayout(shaders.layout);
         context->VSSetShader(shaders.vs, nullptr, 0);
         context->PSSetShader(shaders.ps, nullptr, 0);

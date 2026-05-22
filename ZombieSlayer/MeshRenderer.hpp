@@ -15,24 +15,25 @@ public:
         if (cBuffer) cBuffer->Release();
     }
 
-    void Start(GraphicsContext* gfx) override {
+    void Start() override {
         D3D11_BUFFER_DESC cbd = { 0 };
         cbd.Usage = D3D11_USAGE_DEFAULT;
         cbd.ByteWidth = sizeof(ConstantBuffer);
         cbd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-        gfx->Device->CreateBuffer(&cbd, nullptr, &cBuffer);
+        GraphicsContext::Get()->Device->CreateBuffer(&cbd, nullptr, &cBuffer);
     }
 
-    void Render(GraphicsContext* gfx) override {
+    void Render() override {
         if (!pMeshData || !pMaterial) return;
 
-        pMaterial->Bind(gfx->ImmediateContext);
+        pMaterial->Bind();
 
         float s = 1.0f / (pOwner->pos.z + 1.0f);
         XMMATRIX world = XMMatrixScaling(s * pOwner->scale.x, s * pOwner->scale.y, 1.0f) *
             XMMatrixRotationZ(pOwner->rot.z) *
             XMMatrixTranslation(pOwner->pos.x, pOwner->pos.y, 0.0f);
 
+        GraphicsContext* gfx = GraphicsContext::Get();
         ConstantBuffer cb;
         cb.matWorld = XMMatrixTranspose(world);
         gfx->ImmediateContext->UpdateSubresource(cBuffer, 0, nullptr, &cb, 0, 0);

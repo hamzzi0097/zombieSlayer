@@ -31,7 +31,7 @@ public:
         spawnDelay = 0.5f;
     }
 
-    void Start(GraphicsContext* gfx) override
+    void Start() override
     {
     }
 
@@ -51,7 +51,7 @@ public:
     {
     }
 
-    void Render(GraphicsContext* gfx) override
+    void Render() override
     {
     }
 

@@ -54,8 +54,7 @@ int WINAPI WinMain(HINSTANCE hI, HINSTANCE, LPSTR, int nS)
 
     ColorMaterial playerMaterial(
         starShaders,
-        XMFLOAT4(0.2f, 0.8f, 1.0f, 1.0f),
-        GraphicsContext::Get()->Device
+        XMFLOAT4(0.2f, 0.8f, 1.0f, 1.0f)
     );
 
     // player test
