@@ -6,13 +6,18 @@
 #include "PlayerBulletSpawner.hpp"
 #include "Logger.hpp"
 
+// GraphicsContext 싱글톤 인스턴스 정의
 GraphicsContext* GraphicsContext::s_instance = nullptr;
 
+// -----------------------------------------------------------------------------
+// [윈도우 메시지 처리기]
+// -----------------------------------------------------------------------------
 LRESULT CALLBACK GlobalWndProc(HWND h, UINT m, WPARAM w, LPARAM l) {
     if (m == WM_DESTROY) PostQuitMessage(0);
     return DefWindowProc(h, m, w, l);
 }
 
+// 원 그리기
 std::vector<Vertex> CreateCircleVertices(float radius, int segments, XMFLOAT4 color)
 {
     std::vector<Vertex> vertices;
@@ -30,9 +35,12 @@ std::vector<Vertex> CreateCircleVertices(float radius, int segments, XMFLOAT4 co
     return vertices;
 }
 
-
+// -----------------------------------------------------------------------------
+// [메인 엔트리 포인트]
+// -----------------------------------------------------------------------------
 int WINAPI WinMain(HINSTANCE hI, HINSTANCE, LPSTR, int nS)
 {
+    // 엔진 매니저 초기화
     GameLoop gEngine;
     if (!gEngine.Initialize(hI, GlobalWndProc)) {
         LOG_ERROR("Engine initialization failed.");
@@ -44,8 +52,10 @@ int WINAPI WinMain(HINSTANCE hI, HINSTANCE, LPSTR, int nS)
         { "COLOR",    0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 }
     };
 
+    // 셰이더 컴파일 및 생성
     ShaderSet starShaders = GraphicsContext::Get()->CompileAndCreate(L"effect.hlsl", 0, true, ied, 2);
   
+    // 플레이어 원 Mesh 생성
     std::vector<Vertex> playerVertices =
         CreateCircleVertices(1.0f, 256, XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
 
@@ -58,14 +68,14 @@ int WINAPI WinMain(HINSTANCE hI, HINSTANCE, LPSTR, int nS)
         GraphicsContext::Get()->Device
     );
 
-    // player test
+    // 플레이어 오브젝트 구성
     GameObject* player = new GameObject(0.0f, 0.0f, 0.0f);
     player->scale = { 0.08f, 0.08f, 1.0f };
 
-    player->AddComponent(new MeshRenderer(&playerMesh, &playerMaterial));
-    player->AddComponent(new PlayerController(gEngine.win.hWnd, &gEngine.win.Width, &gEngine.win.Height));
-    player->AddComponent(new PlayerBulletSpawner(
-        &gEngine.world,
+    player->AddComponent(new MeshRenderer(&playerMesh, &playerMaterial));   // 렌더링 컴포넌트 추가
+    player->AddComponent(new PlayerController(gEngine.win.hWnd, &gEngine.win.Width, &gEngine.win.Height));  // 이동/회전 컴포넌트 추가
+    player->AddComponent(new PlayerBulletSpawner(   //탄환 스포너 컴포넌트 추가
+        &gEngine.pendingObjects,
         &playerMesh,
         &playerMaterial,
         gEngine.win.hWnd,
@@ -74,19 +84,13 @@ int WINAPI WinMain(HINSTANCE hI, HINSTANCE, LPSTR, int nS)
     ));
 
     gEngine.world.push_back(player);
-
-    // playerbullet test
-    GameObject* testBullet = new GameObject(-0.5f, 0.0f, 0.0f);
-    testBullet->scale = { 0.05f, 0.05f, 1.0f };
-
-    testBullet->AddComponent(new MeshRenderer(&playerMesh, &playerMaterial));
-    testBullet->AddComponent(new PlayerBullet({ 1.0f, 0.0f }, 0.5f, 2.0f));
-
-    gEngine.world.push_back(testBullet);
     
+    // 엔진 실행 (메인 루프)
     LOG_INFO("GameLoop Start!");
     gEngine.Run();
 
+    // 메모리 해제
     starShaders.Release();
+
     return 0;
 }
