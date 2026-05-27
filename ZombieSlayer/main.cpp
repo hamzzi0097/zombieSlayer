@@ -5,6 +5,7 @@
 #include "PlayerBullet.hpp"
 #include "PlayerBulletSpawner.hpp"
 #include "Logger.hpp"
+#include "MonsterSpawner.hpp"
 
 // GraphicsContext 싱글톤 인스턴스 정의
 GraphicsContext* GraphicsContext::s_instance = nullptr;
@@ -68,6 +69,7 @@ int WINAPI WinMain(HINSTANCE hI, HINSTANCE, LPSTR, int nS)
         GraphicsContext::Get()->Device
     );
 
+ 
     // 플레이어 오브젝트 구성
     GameObject* player = new GameObject(0.0f, 0.0f, 0.0f);
     player->scale = { 0.08f, 0.08f, 1.0f };
@@ -84,6 +86,16 @@ int WINAPI WinMain(HINSTANCE hI, HINSTANCE, LPSTR, int nS)
     ));
 
     gEngine.world.push_back(player);
+
+    std::random_device rd;
+    std::mt19937 gen(rd()); 
+    std::uniform_int_distribution<int> dis(1, 4);
+    MonsterSpawner mon(player, starShaders, CreateCircleVertices(1.0f, 256, XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f)));
+    for (int i = 0; i < 10; i++) {
+   
+      GameObject* monster = mon.generationMonster(dis(gen), 0);
+      gEngine.world.push_back(monster);
+   }
     
     // 엔진 실행 (메인 루프)
     LOG_INFO("GameLoop Start!");
