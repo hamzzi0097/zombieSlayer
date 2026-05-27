@@ -1,5 +1,6 @@
 #pragma once
 #include "ObjectBase.hpp"
+#include "Collider.hpp"
 
 // 플레이어가 발사한 탄환의 이동 및 수명 처리를 담당
 class PlayerBullet : public Component
@@ -20,6 +21,18 @@ public:
         {
             moveDir.x /= len;
             moveDir.y /= len;
+        }
+    }
+
+    // 플레이어 탄환과 몬스터와 충돌 : 탄환을 제거 대상으로 설정
+    void OnCollision(GameObject* obj) override
+    {
+        // 충돌한 상대의 Collider 레이어를 확인하여 몬스터인지 판별
+        Collider* curComponent = obj->GetComponent<Collider>();
+
+        if (curComponent && curComponent->layer == CollisionLayer::Monster)
+        {
+            pOwner->isObjDead = true;
         }
     }
 

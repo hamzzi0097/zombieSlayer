@@ -128,6 +128,7 @@
     <ClCompile Include="MonsterMove.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Collider.hpp" />
     <ClInclude Include="MonsterSpawner.hpp" />
     <ClInclude Include="PlayerBullet.hpp" />
     <ClInclude Include="Framework.hpp" />
