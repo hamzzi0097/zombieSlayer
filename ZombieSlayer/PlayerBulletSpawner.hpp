@@ -64,10 +64,16 @@ private:
         GetCursorPos(&mousePos);
         ScreenToClient(hWnd, &mousePos);
 
-        // 게임 월드 좌표를 (-1 ~ 1)로 변환
+        // 화면 비율 반영 월드 좌표로 보정
         XMFLOAT2 mouseWorldPos;
+        float aspect = (float)(*windowWidth) / (float)(*windowHeight);
+
         mouseWorldPos.x = ((float)mousePos.x / (float)(*windowWidth)) * 2.0f - 1.0f;
         mouseWorldPos.y = 1.0f - ((float)mousePos.y / (float)(*windowHeight)) * 2.0f;
+
+        if (aspect >= 1.0f) mouseWorldPos.x *= aspect;
+        else mouseWorldPos.y /= aspect;
+
 
         return mouseWorldPos;
     }
