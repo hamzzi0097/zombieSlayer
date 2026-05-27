@@ -1,5 +1,6 @@
 #pragma once
 #include "Framework.hpp"
+#include "Logger.hpp"
 
 class GraphicsContext {
 public:
@@ -44,9 +45,19 @@ public:
     }
 
     void Resize(int w, int h) {
+        LOG_INFO("Resize requested: %dx%d", w, h);
+
         ImmediateContext->OMSetRenderTargets(0, nullptr, nullptr);
         if (RTV) { RTV->Release(); RTV = nullptr; }
-        SwapChain->ResizeBuffers(0, w, h, DXGI_FORMAT_UNKNOWN, 0);
+        HRESULT hr = SwapChain->ResizeBuffers(0, w, h, DXGI_FORMAT_UNKNOWN, 0);
+
+        if (FAILED(hr)) {
+            LOG_ERROR("ResizeBuffers failed. hr=0x%08X", hr);
+            return;
+        }
+
+        LOG_INFO("ResizeBuffers succeeded: %dx%d", w, h);
+
         CreateRTV(w, h);
     }
 
