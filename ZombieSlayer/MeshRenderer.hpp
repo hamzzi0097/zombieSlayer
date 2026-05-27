@@ -34,8 +34,16 @@ public:
             XMMatrixRotationZ(pOwner->rot.z) *
             XMMatrixTranslation(pOwner->pos.x, pOwner->pos.y, 0.0f);
 
+        // 원형 Mesh가 찌그러지지 않도록 비율 보정
+        float aspect = GraphicsContext::Get()->GetAspectRatio();
+        XMMATRIX aspectCorrection = XMMatrixIdentity();
+
+        if (aspect >= 1.0f) aspectCorrection = XMMatrixScaling(1.0f / aspect, 1.0f, 1.0f);
+        else aspectCorrection = XMMatrixScaling(1.0f, aspect, 1.0f);    // 월드 변환 이후 화면 비율 보정 적용
+
         ConstantBuffer cb;
-        cb.matWorld = XMMatrixTranspose(world);
+
+        cb.matWorld = XMMatrixTranspose(world * aspectCorrection);
         gfx->ImmediateContext->UpdateSubresource(cBuffer, 0, nullptr, &cb, 0, 0);
         gfx->ImmediateContext->VSSetConstantBuffers(0, 1, &cBuffer);
 
