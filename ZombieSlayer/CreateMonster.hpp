@@ -21,7 +21,7 @@ public:
   CreateMonster(GameObject* player) :left({ -WIDTH,0 }),    right({WIDTH, 0}),    up({ 0,LENGTH }),    down  ({ 0,-LENGTH }), gen(rd()), distrib(1, 800),player(player){
 
   }
-  void generationMonster(int monster, int genPos) { //genPos 1Àº left, 2´Â right, 3Àº up, 4´Â down
+  void generationMonster(int monster, int genPos) { //genPos 1ì€ left, 2ëŠ” right, 3ì€ up, 4ëŠ” down
     int positonX=distrib(gen)-400;
     int positonY = distrib(gen)%600 - 300;
     left.y = positonY;
@@ -52,6 +52,6 @@ public:
     else if (monster == 1) {
 
     }
-    // ¸ó½ºÅÍ »ı¼ºµÇ´Â À§Ä¡¸¸ ³× ¹æÇâÀ¸·Î ¼³Á¤, ¿©±â¼­ ÇÏ³ª ºÒ·¯¼­ »ç¿ëÇÏ¸é µÉ µí ÇÔ
+    // ëª¬ìŠ¤í„° ìƒì„±ë˜ëŠ” ìœ„ì¹˜ë§Œ ë„¤ ë°©í–¥ìœ¼ë¡œ ì„¤ì •, ì—¬ê¸°ì„œ í•˜ë‚˜ ë¶ˆëŸ¬ì„œ ì‚¬ìš©í•˜ë©´ ë  ë“¯ í•¨
   }
 };
