@@ -83,7 +83,7 @@ int WINAPI WinMain(HINSTANCE hI, HINSTANCE, LPSTR, int nS)
 
     gEngine.world.push_back(testBullet);
     
-    LOG_INFO("GameLoop Start!");
+    LOG_DEBUG("GameLoop Start!");
     gEngine.Run();
 
     starShaders.Release();

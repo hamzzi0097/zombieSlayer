@@ -14,14 +14,14 @@ public:
     std::vector<GameObject*> world;
 
     GameLoop() {
-        LOG_INFO("GameLoop Created.");
+        LOG_DEBUG("GameLoop Created.");
     }
 
     ~GameLoop() {
         for (auto obj : world) delete obj;
         world.clear();
         GraphicsContext::Destroy();
-        LOG_INFO("GameLoop Destroyed.");
+        LOG_DEBUG("GameLoop Destroyed.");
     }
 
     bool Initialize(HINSTANCE hInst, LRESULT(CALLBACK* wndProc)(HWND, UINT, WPARAM, LPARAM),
@@ -37,7 +37,7 @@ public:
     }
 
     void Run() {
-        LOG_INFO("Game loop started");
+        LOG_DEBUG("Game loop started");
         OnEnter(m_state);
         MSG msg = {};
         while (msg.message != WM_QUIT && m_isRunning) {
@@ -52,7 +52,7 @@ public:
                 Render();
             }
         }
-        LOG_INFO("Game loop ended");
+        LOG_DEBUG("Game loop ended");
     }
 
 private:
@@ -61,24 +61,35 @@ private:
 
     void OnEnter(State s) {
         switch (s) {
-        case State::Lobby:    LOG_INFO("State Enter: Lobby");    break;
-        case State::Playing:  LOG_INFO("State Enter: Playing");  break;
-        case State::GameOver: LOG_INFO("State Enter: GameOver"); break;
+        case State::Lobby:
+            LOG_DEBUG("State Enter: Lobby");
+            LOG_INFO("=== ZombieSlayer ===");
+            LOG_INFO("Press SPACE to start");
+            break;
+        case State::Playing:
+            LOG_DEBUG("State Enter: Playing");
+            LOG_INFO("Game Start! Survive as long as you can.");
+            break;
+        case State::GameOver:
+            LOG_DEBUG("State Enter: GameOver");
+            LOG_INFO("Game Over! Press ENTER to restart / ESC to lobby");
+            break;
         }
     }
 
     void OnExit(State s) {
         switch (s) {
-        case State::Lobby:    LOG_INFO("State Exit: Lobby");    break;
-        case State::Playing:  LOG_INFO("State Exit: Playing");  break;
-        case State::GameOver: LOG_INFO("State Exit: GameOver"); break;
+        case State::Lobby:    LOG_DEBUG("State Exit: Lobby");    break;
+        case State::Playing:  LOG_DEBUG("State Exit: Playing");  break;
+        case State::GameOver: LOG_DEBUG("State Exit: GameOver"); break;
         }
     }
 
     void Input() {
         switch (m_state) {
         case State::Lobby:
-
+            if (GetAsyncKeyState(VK_SPACE) & 0x0001)
+                ChangeState(State::Playing);
             break;
         case State::Playing:
 
