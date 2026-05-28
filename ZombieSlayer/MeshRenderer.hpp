@@ -34,7 +34,6 @@ public:
             XMMatrixRotationZ(pOwner->rot.z) *
             XMMatrixTranslation(pOwner->pos.x, pOwner->pos.y, 0.0f);
 
-        GraphicsContext* gfx = GraphicsContext::Get();
         // 원형 Mesh가 찌그러지지 않도록 비율 보정
         float aspect = GraphicsContext::Get()->GetAspectRatio();
         XMMATRIX aspectCorrection = XMMatrixIdentity();
