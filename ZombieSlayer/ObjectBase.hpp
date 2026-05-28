@@ -2,7 +2,6 @@
 #include "Framework.hpp"
 #include "GraphicsContext.hpp"
 
-// 전방 선언: "자세한 건 나중에 알려줄게, 일단 이런 클래스가 있어"
 class GameObject;
 
 class Component {
@@ -15,6 +14,7 @@ public:
     virtual void Update(float dt) = 0;
     virtual void Render() = 0;
     virtual ~Component() {}
+    virtual void OnCollision(GameObject* obj) {}    // 충돌 발생 시 각 컴포넌트에게 제공하는 콜백함수
 };
 
 class GameObject {
@@ -36,6 +36,29 @@ public:
     void AddComponent(Component* c) {
         c->pOwner = this;
         components.push_back(c);
+    }
+
+    // GameObject에 있는 컴포넌트 중 요구하는 타입의 컴포넌트를 찾아 반환
+    template<typename T>
+    T* GetComponent()
+    {
+        for (auto c : components)
+        {
+            if (auto compo = dynamic_cast<T*>(c))
+            {
+                return compo;
+            }
+        }
+
+        return nullptr;
+    }
+    // 충돌 이벤트를 이 오브젝트에 붙은 모든 컴포넌트로 전달
+    void OnCollision(GameObject* obj)
+    {
+        for (auto c : components)
+        {
+            c->OnCollision(obj);
+        }
     }
 
     void Input() {

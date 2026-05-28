@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -125,22 +125,22 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="MonsterMove.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="CreateMonster.hpp" />
+    <ClInclude Include="Collider.hpp" />
+    <ClInclude Include="MonsterSpawner.hpp" />
     <ClInclude Include="PlayerBullet.hpp" />
     <ClInclude Include="Framework.hpp" />
     <ClInclude Include="GameLoop.hpp" />
     <ClInclude Include="GraphicsContext.hpp" />
     <ClInclude Include="Logger.hpp" />
     <ClInclude Include="Material.hpp" />
-    <ClInclude Include="MeleeMonster.hpp" />
     <ClInclude Include="Mesh.hpp" />
     <ClInclude Include="MeshRenderer.hpp" />
     <ClInclude Include="ObjectBase.hpp" />
     <ClInclude Include="PlayerBulletSpawner.hpp" />
     <ClInclude Include="PlayerControl.hpp" />
-    <ClInclude Include="RangedMonster.hpp" />
     <ClInclude Include="Timer.hpp" />
     <ClInclude Include="WindowContext.hpp" />
   </ItemGroup>

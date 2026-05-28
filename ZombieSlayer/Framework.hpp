@@ -1,6 +1,6 @@
 #pragma once
 
-// [Framework.hpp] ½Ã½ºÅÛ Çì´õ ¹× Àü¿ª ±¸Á¶Ã¼
+// [Framework.hpp] ì‹œìŠ¤í…œ í—¤ë” ë° ì „ì—­ êµ¬ì¡°ì²´
 #include <windows.h>
 #include <d3d11.h>
 #include <d3dcompiler.h>
@@ -16,7 +16,7 @@
 
 using namespace DirectX;
 
-// 1. °øÅë µ¥ÀÌÅÍ ±¸Á¶Ã¼
+// 1. ê³µí†µ ë°ì´í„° êµ¬ì¡°ì²´
 struct Vertex {
     XMFLOAT3 pos; XMFLOAT4 col;
 };
@@ -29,7 +29,7 @@ struct ColorBuffer {
     XMFLOAT4 tintColor;
 };
 
-// 2. ¼ÎÀÌ´õ ¸®¼Ò½º ¹­À½
+// 2. ì…°ì´ë” ë¦¬ì†ŒìŠ¤ ë¬¶ìŒ
 struct ShaderSet {
     ID3D11VertexShader* vs = nullptr;
     ID3D11PixelShader* ps = nullptr;

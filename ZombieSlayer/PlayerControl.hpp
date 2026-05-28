@@ -81,14 +81,21 @@ public:
 
     }
 
+    // 마우스 위치 업데이트
     void UpdateMousePosition()
     {
         POINT mousePos;
         GetCursorPos(&mousePos);
         ScreenToClient(hWnd, &mousePos);
 
+        // 화면 비율에 의한 마우스 위치 보정
+        float aspect = (float)(*windowWidth) / (float)(*windowHeight);
         mouseWorldPos.x = ((float)mousePos.x / (float)(*windowWidth)) * 2.0f - 1.0f;
         mouseWorldPos.y = 1.0f - ((float)mousePos.y / (float)(*windowHeight)) * 2.0f;
-        printf("mouseWorld: %.4f, %.4f\n", mouseWorldPos.x, mouseWorldPos.y);
+
+        if (aspect >= 1.0f) mouseWorldPos.x *= aspect;
+        else mouseWorldPos.y /= aspect;
+        
+        // printf("mouseWorld: %.4f, %.4f\n", mouseWorldPos.x, mouseWorldPos.y);
     }
 };

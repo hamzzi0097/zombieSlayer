@@ -4,14 +4,17 @@
 #include "Timer.hpp"
 #include "ObjectBase.hpp"
 #include "Logger.hpp"
+#include "Collider.hpp"
 
 class GameLoop {
 public:
     enum class State { Lobby, Playing, GameOver };
 
     WindowContext win;
-    DeltaTime     timer;
+    DeltaTime timer;
     std::vector<GameObject*> world;
+    std::vector<GameObject*> pendingObjects;
+    bool isRunning = true;
 
     GameLoop() {
         LOG_DEBUG("GameLoop Created.");
@@ -20,6 +23,7 @@ public:
     ~GameLoop() {
         for (auto obj : world) delete obj;
         world.clear();
+        pendingObjects.clear();
         GraphicsContext::Destroy();
         LOG_DEBUG("GameLoop Destroyed.");
     }
@@ -95,6 +99,67 @@ private:
 
             break;
         case State::GameOver:
+    // Collider가 붙은 모든 오브젝트 쌍 체크 & 충돌 이벤트 전달
+    void CheckOnCollisions()
+    {
+        for (size_t i = 0; i < world.size(); i++)
+        {
+            Collider* curCollider_1 = world[i]->GetComponent<Collider>();
+            if (!curCollider_1) continue;
+
+            for (size_t j = i + 1; j < world.size(); j++)
+            {
+                if (world[i]->isObjDead || world[j]->isObjDead) continue;
+
+                Collider* curCollider_2 = world[j]->GetComponent<Collider>();
+                if (!curCollider_2) continue;
+
+                if (curCollider_1->CheckCollision(curCollider_2))
+                {
+                    world[i]->OnCollision(world[j]);
+                    world[j]->OnCollision(world[i]);
+                }
+            }
+        }
+    }
+
+    void Input() {
+        if (GetAsyncKeyState(VK_ESCAPE) & 0x8000) isRunning = false;
+
+        // Resize window (C key)
+        if (GetAsyncKeyState('C') & 0x0001) {
+            win.Width = 600; win.Height = 600;
+            RECT rc = { 0, 0, win.Width, win.Height };
+            AdjustWindowRect(&rc, WS_OVERLAPPEDWINDOW, FALSE);
+            SetWindowPos(win.hWnd, nullptr, 0, 0,
+                         rc.right - rc.left, rc.bottom - rc.top,
+                         SWP_NOMOVE | SWP_NOZORDER);
+            GraphicsContext::Get()->Resize(win.Width, win.Height);
+        }
+
+        for (auto obj : world) obj->Input();
+    }
+
+    void Update() {
+        float dt = timer.GetDelta();
+
+        // 생성 예약된 오브젝트를 world로 push_back
+        for (auto obj : pendingObjects) world.push_back(obj);
+        pendingObjects.clear();
+
+        for (auto obj : world) obj->Update(dt);
+
+        // 이동 업데이트 이후 죽은 오브젝트 제거 전 충돌 검사
+        CheckOnCollisions();
+
+        // 죽음 표시된 오브젝트를 world에서 제거
+        for (auto obj = world.begin(); obj != world.end(); ) {
+            if ((*obj)->isObjDead) {
+                delete *obj;
+                obj = world.erase(obj);
+                continue;
+            }
+            obj++;
 
             break;
         }
@@ -124,6 +189,7 @@ private:
 
             break;
         case State::GameOver:
+        for (auto obj : world) obj->Render();
 
             break;
         }
