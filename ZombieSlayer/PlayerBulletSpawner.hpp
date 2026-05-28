@@ -2,6 +2,7 @@
 #include "ObjectBase.hpp"
 #include "MeshRenderer.hpp"
 #include "PlayerBullet.hpp"
+#include "Collider.hpp"
 
 // 플레이어의 탄환 오브젝트 생성 컴포넌트
 class PlayerBulletSpawner : public Component
@@ -64,10 +65,16 @@ private:
         GetCursorPos(&mousePos);
         ScreenToClient(hWnd, &mousePos);
 
-        // 게임 월드 좌표를 (-1 ~ 1)로 변환
+        // 화면 비율 반영 월드 좌표로 보정
         XMFLOAT2 mouseWorldPos;
+        float aspect = (float)(*windowWidth) / (float)(*windowHeight);
+
         mouseWorldPos.x = ((float)mousePos.x / (float)(*windowWidth)) * 2.0f - 1.0f;
         mouseWorldPos.y = 1.0f - ((float)mousePos.y / (float)(*windowHeight)) * 2.0f;
+
+        if (aspect >= 1.0f) mouseWorldPos.x *= aspect;
+        else mouseWorldPos.y /= aspect;
+
 
         return mouseWorldPos;
     }
@@ -96,6 +103,9 @@ private:
             bullet->scale = { 0.03f, 0.03f, 1.0f };
             bullet->AddComponent(new MeshRenderer(bulletMesh, bulletMaterial));
             bullet->AddComponent(new PlayerBullet(fireDir));
+
+            // 탄환 레이어 Collider
+            bullet->AddComponent(new CircleCollider(1.0f, CollisionLayer::PlayerBullet));
 
             // world 순회 중 직접 추가하지 않고, 다음 Update에서 추가되도록 예약
             pendingObjects->push_back(bullet);

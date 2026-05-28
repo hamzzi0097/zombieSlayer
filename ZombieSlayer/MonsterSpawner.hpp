@@ -1,8 +1,7 @@
 #pragma once
 #include "Framework.hpp"
 #include "MonsterMove.hpp"
-
-
+#include "Collider.hpp"
 
 class MonsterSpawner {
 private:
@@ -26,8 +25,7 @@ public:
 
    monsterMaterial=new ColorMaterial(
       starShaders,
-      XMFLOAT4(0.2f, 0.8f, 1.0f, 1.0f),
-      GraphicsContext::Get()->Device
+      XMFLOAT4(0.2f, 0.8f, 1.0f, 1.0f)
     );
 
   }
@@ -58,8 +56,11 @@ public:
     }
     if (monster == 0) {
       GameObject* monster = new GameObject(curPos.x, curPos.y, 0);
-      monster->AddComponent(new MonsterMove(player, 3.0f));
+      monster->AddComponent(new MonsterMove(player, 0.5f));
       monster->AddComponent(new MeshRenderer(&monsterMesh, &*monsterMaterial));
+
+      // 몬스터 레이어 Collider
+      monster->AddComponent(new CircleCollider(1.0f, CollisionLayer::Monster));
       monster->scale = { 0.1,0.1,0.1 };
         return monster;
     }

@@ -1,5 +1,6 @@
 #pragma once
 #include "Framework.hpp"
+#include "Logger.hpp"
 
 class GraphicsContext {
 public:
@@ -7,6 +8,7 @@ public:
     ID3D11DeviceContext*    ImmediateContext = nullptr;
     IDXGISwapChain*         SwapChain        = nullptr;
     ID3D11RenderTargetView* RTV              = nullptr;
+    HWND hWnd = nullptr;
     bool IsFullscreen = false;
     int  VSync        = 1;
 
@@ -43,15 +45,39 @@ public:
     }
 
     void Resize(int w, int h) {
+        LOG_INFO("Resize requested: %dx%d", w, h);
+
         ImmediateContext->OMSetRenderTargets(0, nullptr, nullptr);
         if (RTV) { RTV->Release(); RTV = nullptr; }
-        SwapChain->ResizeBuffers(0, w, h, DXGI_FORMAT_UNKNOWN, 0);
+        HRESULT hr = SwapChain->ResizeBuffers(0, w, h, DXGI_FORMAT_UNKNOWN, 0);
+
+        if (FAILED(hr)) {
+            LOG_ERROR("ResizeBuffers failed. hr=0x%08X", hr);
+            return;
+        }
+
+        LOG_INFO("ResizeBuffers succeeded: %dx%d", w, h);
+
         CreateRTV(w, h);
     }
 
     void SetFullscreen(bool goFull) {
         IsFullscreen = goFull;
         SwapChain->SetFullscreenState(goFull, nullptr);
+    }
+
+    // 현재 창의 실제 클라이언트 영역 기준 화면 비율 반환 (현재 C키에 의해 buffer 바뀔때만 적용됨)
+    float GetAspectRatio()
+    {
+        RECT rect;
+        GetClientRect(hWnd, &rect);
+
+        float width = (float)(rect.right - rect.left);
+        float height = (float)(rect.bottom - rect.top);
+
+        if (height <= 0.0f) return 1.0f;
+
+        return width / height;
     }
 
     ShaderSet CompileAndCreate(const void* source, size_t length, bool isFile,
@@ -112,7 +138,7 @@ private:
         sd.OutputWindow         = hWnd;
         sd.SampleDesc.Count     = 1;
         sd.Windowed             = TRUE;
-
+        this->hWnd = hWnd;
         HRESULT hr = D3D11CreateDeviceAndSwapChain(
             nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, 0,
             nullptr, 0, D3D11_SDK_VERSION,
