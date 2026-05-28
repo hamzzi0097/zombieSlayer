@@ -4,6 +4,7 @@
 #include "Timer.hpp"
 #include "ObjectBase.hpp"
 #include "Logger.hpp"
+#include "Collider.hpp"
 
 class GameLoop {
 public:
@@ -31,6 +32,30 @@ public:
         return GraphicsContext::Create(win.hWnd, w, h);
     }
 
+    // Collider가 붙은 모든 오브젝트 쌍 체크 & 충돌 이벤트 전달
+    void CheckOnCollisions()
+    {
+        for (size_t i = 0; i < world.size(); i++)
+        {
+            Collider* curCollider_1 = world[i]->GetComponent<Collider>();
+            if (!curCollider_1) continue;
+
+            for (size_t j = i + 1; j < world.size(); j++)
+            {
+                if (world[i]->isObjDead || world[j]->isObjDead) continue;
+
+                Collider* curCollider_2 = world[j]->GetComponent<Collider>();
+                if (!curCollider_2) continue;
+
+                if (curCollider_1->CheckCollision(curCollider_2))
+                {
+                    world[i]->OnCollision(world[j]);
+                    world[j]->OnCollision(world[i]);
+                }
+            }
+        }
+    }
+
     void Input() {
         if (GetAsyncKeyState(VK_ESCAPE) & 0x8000) isRunning = false;
 
@@ -56,6 +81,9 @@ public:
         pendingObjects.clear();
 
         for (auto obj : world) obj->Update(dt);
+
+        // 이동 업데이트 이후 죽은 오브젝트 제거 전 충돌 검사
+        CheckOnCollisions();
 
         // 죽음 표시된 오브젝트를 world에서 제거
         for (auto obj = world.begin(); obj != world.end(); ) {

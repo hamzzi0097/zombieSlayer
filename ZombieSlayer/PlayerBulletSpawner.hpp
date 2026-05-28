@@ -2,6 +2,7 @@
 #include "ObjectBase.hpp"
 #include "MeshRenderer.hpp"
 #include "PlayerBullet.hpp"
+#include "Collider.hpp"
 
 // 플레이어의 탄환 오브젝트 생성 컴포넌트
 class PlayerBulletSpawner : public Component
@@ -102,6 +103,9 @@ private:
             bullet->scale = { 0.03f, 0.03f, 1.0f };
             bullet->AddComponent(new MeshRenderer(bulletMesh, bulletMaterial));
             bullet->AddComponent(new PlayerBullet(fireDir));
+
+            // 탄환 레이어 Collider
+            bullet->AddComponent(new CircleCollider(1.0f, CollisionLayer::PlayerBullet));
 
             // world 순회 중 직접 추가하지 않고, 다음 Update에서 추가되도록 예약
             pendingObjects->push_back(bullet);
