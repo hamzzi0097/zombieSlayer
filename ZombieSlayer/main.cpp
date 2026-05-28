@@ -65,8 +65,7 @@ int WINAPI WinMain(HINSTANCE hI, HINSTANCE, LPSTR, int nS)
 
     ColorMaterial playerMaterial(
         starShaders,
-        XMFLOAT4(0.2f, 0.8f, 1.0f, 1.0f),
-        GraphicsContext::Get()->Device
+        XMFLOAT4(0.2f, 0.8f, 1.0f, 1.0f)
     );
 
  
@@ -103,8 +102,7 @@ int WINAPI WinMain(HINSTANCE hI, HINSTANCE, LPSTR, int nS)
         gEngine.world.push_back(monster);
     }
     
-    // 엔진 실행 (메인 루프)
-    LOG_INFO("GameLoop Start!");
+    LOG_DEBUG("GameLoop Start!");
     gEngine.Run();
 
     // 메모리 해제

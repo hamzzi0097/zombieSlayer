@@ -8,6 +8,8 @@
 
 class GameLoop {
 public:
+    enum class State { Lobby, Playing, GameOver };
+
     WindowContext win;
     DeltaTime timer;
     std::vector<GameObject*> world;
@@ -15,7 +17,7 @@ public:
     bool isRunning = true;
 
     GameLoop() {
-        LOG_INFO("GameLoop Created.");
+        LOG_DEBUG("GameLoop Created.");
     }
 
     ~GameLoop() {
@@ -23,7 +25,7 @@ public:
         world.clear();
         pendingObjects.clear();
         GraphicsContext::Destroy();
-        LOG_INFO("GameLoop Destroyed.");
+        LOG_DEBUG("GameLoop Destroyed.");
     }
 
     bool Initialize(HINSTANCE hInst, LRESULT(CALLBACK* wndProc)(HWND, UINT, WPARAM, LPARAM),
@@ -32,6 +34,71 @@ public:
         return GraphicsContext::Create(win.hWnd, w, h);
     }
 
+    void ChangeState(State next) {
+        OnExit(m_state);
+        m_state = next;
+        OnEnter(m_state);
+    }
+
+    void Run() {
+        LOG_DEBUG("Game loop started");
+        OnEnter(m_state);
+        MSG msg = {};
+        while (msg.message != WM_QUIT && m_isRunning) {
+            if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
+                TranslateMessage(&msg);
+                DispatchMessage(&msg);
+            }
+            else {
+                float dt = timer.GetDelta();
+                Input();
+                Update(dt);
+                Render();
+            }
+        }
+        LOG_DEBUG("Game loop ended");
+    }
+
+private:
+    State m_state     = State::Lobby;
+    bool  m_isRunning = true;
+
+    void OnEnter(State s) {
+        switch (s) {
+        case State::Lobby:
+            LOG_DEBUG("State Enter: Lobby");
+            LOG_INFO("=== ZombieSlayer ===");
+            LOG_INFO("Press SPACE to start");
+            break;
+        case State::Playing:
+            LOG_DEBUG("State Enter: Playing");
+            LOG_INFO("Game Start! Survive as long as you can.");
+            break;
+        case State::GameOver:
+            LOG_DEBUG("State Enter: GameOver");
+            LOG_INFO("Game Over! Press ENTER to restart / ESC to lobby");
+            break;
+        }
+    }
+
+    void OnExit(State s) {
+        switch (s) {
+        case State::Lobby:    LOG_DEBUG("State Exit: Lobby");    break;
+        case State::Playing:  LOG_DEBUG("State Exit: Playing");  break;
+        case State::GameOver: LOG_DEBUG("State Exit: GameOver"); break;
+        }
+    }
+
+    void Input() {
+        switch (m_state) {
+        case State::Lobby:
+            if (GetAsyncKeyState(VK_SPACE) & 0x0001)
+                ChangeState(State::Playing);
+            break;
+        case State::Playing:
+
+            break;
+        case State::GameOver:
     // Collider가 붙은 모든 오브젝트 쌍 체크 & 충돌 이벤트 전달
     void CheckOnCollisions()
     {
@@ -94,37 +161,38 @@ public:
             }
             obj++;
 
+            break;
         }
+    }
 
+    void Update(float dt) {
+        switch (m_state) {
+        case State::Lobby:
+
+            break;
+        case State::Playing:
+
+            break;
+        case State::GameOver:
+
+            break;
+        }
     }
 
     void Render() {
         auto* gfx = GraphicsContext::Get();
-        float col[] = { 0.1f, 0.2f, 0.3f, 1.0f };
-        gfx->ImmediateContext->ClearRenderTargetView(gfx->RTV, col);
+        switch (m_state) {
+        case State::Lobby:
 
-        D3D11_VIEWPORT vp = { 0, 0, (float)win.Width, (float)win.Height, 0, 1 };
-        gfx->ImmediateContext->RSSetViewports(1, &vp);
-        gfx->ImmediateContext->OMSetRenderTargets(1, &gfx->RTV, nullptr);
-        gfx->ImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+            break;
+        case State::Playing:
 
+            break;
+        case State::GameOver:
         for (auto obj : world) obj->Render();
 
-        gfx->SwapChain->Present(gfx->VSync, 0);
-    }
-
-    void Run() {
-        MSG msg = {};
-        while (msg.message != WM_QUIT && isRunning) {
-            if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
-                TranslateMessage(&msg);
-                DispatchMessage(&msg);
-            }
-            else {
-                Input();
-                Update();
-                Render();
-            }
+            break;
         }
+        gfx->SwapChain->Present(gfx->VSync, 0);
     }
 };

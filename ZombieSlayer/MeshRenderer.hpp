@@ -27,13 +27,14 @@ public:
         GraphicsContext* gfx = GraphicsContext::Get();
         if (!pMeshData || !pMaterial) return;
 
-        pMaterial->Bind(gfx->ImmediateContext);
+        pMaterial->Bind();
 
         float s = 1.0f / (pOwner->pos.z + 1.0f);
         XMMATRIX world = XMMatrixScaling(s * pOwner->scale.x, s * pOwner->scale.y, 1.0f) *
             XMMatrixRotationZ(pOwner->rot.z) *
             XMMatrixTranslation(pOwner->pos.x, pOwner->pos.y, 0.0f);
 
+        GraphicsContext* gfx = GraphicsContext::Get();
         // 원형 Mesh가 찌그러지지 않도록 비율 보정
         float aspect = GraphicsContext::Get()->GetAspectRatio();
         XMMATRIX aspectCorrection = XMMatrixIdentity();
