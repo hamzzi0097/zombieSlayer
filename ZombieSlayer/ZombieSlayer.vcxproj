@@ -125,7 +125,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="MonsterMove.hpp" />
+    <ClCompile Include="MeleeMonsterControl.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Collider.hpp" />
