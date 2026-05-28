@@ -1,7 +1,7 @@
 #pragma once
 #include "ObjectBase.hpp"
 
-class MonsterMove : public Component {
+class MeleeMonsterControl : public Component {
 private:
   enum class  state
   {
@@ -12,14 +12,15 @@ private:
   XMFLOAT2 moveDir;
   GameObject* player;
   float moveSpeed;
-
+  int hp;
 
 public:
-  MonsterMove(GameObject* player, float moveSpeed = 3.0f) {
+    MeleeMonsterControl(GameObject* player, float moveSpeed = 3.0f) {
     meleeState = state::TRACE;
     this->player = player;
     this->moveSpeed = moveSpeed;
     moveDir = { 0,0 };
+    hp = 5;
   }
 
   void Start()override {
@@ -66,5 +67,11 @@ public:
 
   void ChangeState(state nextState) {
     meleeState = nextState;
+  }
+  void getDamaged(int damage) {
+      hp -= damage;
+      if (hp <= 0) {
+          ChangeState(state::DEAD);
+      }
   }
 };

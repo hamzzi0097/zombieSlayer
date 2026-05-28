@@ -6,6 +6,7 @@
 #include "PlayerBulletSpawner.hpp"
 #include "Logger.hpp"
 #include "MonsterSpawner.hpp"
+#include "Collider.hpp"
 
 // GraphicsContext 싱글톤 인스턴스 정의
 GraphicsContext* GraphicsContext::s_instance = nullptr;
@@ -83,6 +84,7 @@ int WINAPI WinMain(HINSTANCE hI, HINSTANCE, LPSTR, int nS)
         &gEngine.win.Width,
         &gEngine.win.Height
     ));
+    player->AddComponent(new CircleCollider(1.0f, CollisionLayer::Player));
 
     gEngine.world.push_back(player);
 

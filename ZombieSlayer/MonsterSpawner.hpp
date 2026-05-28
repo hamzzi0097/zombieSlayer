@@ -1,6 +1,6 @@
 #pragma once
 #include "Framework.hpp"
-#include "MonsterMove.hpp"
+#include "MeleeMonsterControl.hpp"
 #include "Collider.hpp"
 
 class MonsterSpawner {
@@ -56,7 +56,7 @@ public:
     }
     if (monster == 0) {
       GameObject* monster = new GameObject(curPos.x, curPos.y, 0);
-      monster->AddComponent(new MonsterMove(player, 0.5f));
+      monster->AddComponent(new MeleeMonsterControl(player, 0.5f));
       monster->AddComponent(new MeshRenderer(&monsterMesh, &*monsterMaterial));
 
       // 몬스터 레이어 Collider
