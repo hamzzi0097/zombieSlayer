@@ -7,10 +7,11 @@
 
 class GameLoop {
 public:
+    enum class State { Lobby, Playing, GameOver };
+
     WindowContext win;
     DeltaTime     timer;
     std::vector<GameObject*> world;
-    bool isRunning = true;
 
     GameLoop() {
         LOG_INFO("GameLoop Created.");
@@ -29,55 +30,92 @@ public:
         return GraphicsContext::Create(win.hWnd, w, h);
     }
 
-    void Input() {
-        if (GetAsyncKeyState(VK_ESCAPE) & 0x8000) isRunning = false;
-
-        // Resize window (C key)
-        if (GetAsyncKeyState('C') & 0x0001) {
-            win.Width = 600; win.Height = 600;
-            RECT rc = { 0, 0, win.Width, win.Height };
-            AdjustWindowRect(&rc, WS_OVERLAPPEDWINDOW, FALSE);
-            SetWindowPos(win.hWnd, nullptr, 0, 0,
-                         rc.right - rc.left, rc.bottom - rc.top,
-                         SWP_NOMOVE | SWP_NOZORDER);
-            GraphicsContext::Get()->Resize(win.Width, win.Height);
-        }
-
-        for (auto obj : world) obj->Input();
-    }
-
-    void Update() {
-        float dt = timer.GetDelta();
-        for (auto obj : world) obj->Update(dt);
-    }
-
-    void Render() {
-        auto* gfx = GraphicsContext::Get();
-        float col[] = { 0.1f, 0.2f, 0.3f, 1.0f };
-        gfx->ImmediateContext->ClearRenderTargetView(gfx->RTV, col);
-
-        D3D11_VIEWPORT vp = { 0, 0, (float)win.Width, (float)win.Height, 0, 1 };
-        gfx->ImmediateContext->RSSetViewports(1, &vp);
-        gfx->ImmediateContext->OMSetRenderTargets(1, &gfx->RTV, nullptr);
-        gfx->ImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-        for (auto obj : world) obj->Render();
-
-        gfx->SwapChain->Present(gfx->VSync, 0);
+    void ChangeState(State next) {
+        OnExit(m_state);
+        m_state = next;
+        OnEnter(m_state);
     }
 
     void Run() {
+        LOG_INFO("Game loop started");
+        OnEnter(m_state);
         MSG msg = {};
-        while (msg.message != WM_QUIT && isRunning) {
+        while (msg.message != WM_QUIT && m_isRunning) {
             if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
                 TranslateMessage(&msg);
                 DispatchMessage(&msg);
             }
             else {
+                float dt = timer.GetDelta();
                 Input();
-                Update();
+                Update(dt);
                 Render();
             }
         }
+        LOG_INFO("Game loop ended");
+    }
+
+private:
+    State m_state     = State::Lobby;
+    bool  m_isRunning = true;
+
+    void OnEnter(State s) {
+        switch (s) {
+        case State::Lobby:    LOG_INFO("State Enter: Lobby");    break;
+        case State::Playing:  LOG_INFO("State Enter: Playing");  break;
+        case State::GameOver: LOG_INFO("State Enter: GameOver"); break;
+        }
+    }
+
+    void OnExit(State s) {
+        switch (s) {
+        case State::Lobby:    LOG_INFO("State Exit: Lobby");    break;
+        case State::Playing:  LOG_INFO("State Exit: Playing");  break;
+        case State::GameOver: LOG_INFO("State Exit: GameOver"); break;
+        }
+    }
+
+    void Input() {
+        switch (m_state) {
+        case State::Lobby:
+
+            break;
+        case State::Playing:
+
+            break;
+        case State::GameOver:
+
+            break;
+        }
+    }
+
+    void Update(float dt) {
+        switch (m_state) {
+        case State::Lobby:
+
+            break;
+        case State::Playing:
+
+            break;
+        case State::GameOver:
+
+            break;
+        }
+    }
+
+    void Render() {
+        auto* gfx = GraphicsContext::Get();
+        switch (m_state) {
+        case State::Lobby:
+
+            break;
+        case State::Playing:
+
+            break;
+        case State::GameOver:
+
+            break;
+        }
+        gfx->SwapChain->Present(gfx->VSync, 0);
     }
 };
