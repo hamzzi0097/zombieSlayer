@@ -1,6 +1,7 @@
 #pragma once
 #include "ObjectBase.hpp"
 #include "Collider.hpp"
+#include "Health.hpp"
 
 enum class  MeleeState
 {
@@ -68,7 +69,12 @@ public:
             pOwner->isObjDead = true;
             break;
         case MeleeState::ATTACK:
-            player->isObjDead = true;
+            // Health 컴포넌트가 있으면 목숨 1 감소, 없으면 즉사 처리
+            if (Health* hp = player->GetComponent<Health>())
+                hp->TakeDamage();
+            else
+                player->isObjDead = true;
+            ChangeState(MeleeState::TRACE); // 공격 후 다시 추적으로 전환
             break;
         }
     }

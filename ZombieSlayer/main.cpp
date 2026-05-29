@@ -8,6 +8,8 @@
 #include "MonsterSpawner.hpp"
 #include "Collider.hpp"
 #include "MonsterBulletSpawner.hpp"
+#include "Health.hpp"
+#include "HeartUI.hpp"
 
 // GraphicsContext 싱글톤 인스턴스 정의
 GraphicsContext* GraphicsContext::s_instance = nullptr;
@@ -86,6 +88,8 @@ int WINAPI WinMain(HINSTANCE hI, HINSTANCE, LPSTR, int nS)
         &gEngine.win.Height
     ));
     player->AddComponent(new CircleCollider(1.0f, CollisionLayer::Player));
+    player->AddComponent(new Health(3));
+    player->AddComponent(new HeartUI(starShaders));
 
     gEngine.world.push_back(player);
 
