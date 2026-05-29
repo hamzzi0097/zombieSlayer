@@ -1,15 +1,17 @@
 #pragma once
 #include "ObjectBase.hpp"
 #include "Collider.hpp"
-#include <iostream>
+
+enum class  MeleeState
+{
+  TRACE,
+  DEAD,
+  ATTACK
+};
+
 class MeleeMonsterControl : public Component {
 private:
-    enum class  state
-    {
-        TRACE,
-        DEAD,
-        ATTACK
-    }meleeState;
+  MeleeState meleeState;
     XMFLOAT2 moveDir;
     GameObject* player;
     float moveSpeed;
@@ -17,7 +19,7 @@ private:
 
 public:
     MeleeMonsterControl(GameObject* player, float moveSpeed = 3.0f) {
-        meleeState = state::TRACE;
+        meleeState = MeleeState::TRACE;
         this->player = player;
         this->moveSpeed = moveSpeed;
         moveDir = { 0,0 };
@@ -44,11 +46,7 @@ public:
     }
 
     void Update(float dt) override {
-
-        
-        
-        
-        moveDir.x = player->pos.x - this->pOwner->pos.x;
+              moveDir.x = player->pos.x - this->pOwner->pos.x;
         moveDir.y = player->pos.y - this->pOwner->pos.y;
         float len = sqrtf(moveDir.x * moveDir.x + moveDir.y * moveDir.y);
 
@@ -60,16 +58,16 @@ public:
         switch (meleeState)
         {
 
-        case state::TRACE:
+        case MeleeState::TRACE:
             //플레이어한테 이동
 
             this->pOwner->pos.x += moveDir.x * moveSpeed * dt;
             this->pOwner->pos.y += moveDir.y * moveSpeed * dt;
             break;
-        case state::DEAD:
+        case MeleeState::DEAD:
             pOwner->isObjDead = true;
             break;
-        case state::ATTACK:
+        case MeleeState::ATTACK:
             player->isObjDead = true;
             break;
         }
@@ -79,20 +77,20 @@ public:
 
     }
 
-    void ChangeState(state nextState) {
+    void ChangeState(MeleeState nextState) {
         meleeState = nextState;
     }
     void getDamaged(int damage) {
         hp -= damage;
         if (hp <= 0) {
-            ChangeState(state::DEAD);
+            ChangeState(MeleeState::DEAD);
         }
     }
     void OnCollision(GameObject* obj) override
     {
         Collider* curObject = obj->GetComponent<Collider>();
         if (curObject && curObject->layer == CollisionLayer::Player) {
-            ChangeState(state::ATTACK);
+            ChangeState(MeleeState::ATTACK);
         }
     }
 };

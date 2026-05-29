@@ -2,6 +2,7 @@
 #include "ObjectBase.hpp"
 #include "Collider.hpp"
 #include "MeleeMonsterControl.hpp"
+#include "RangedMonsterControl.hpp"
 
 // 플레이어가 발사한 탄환의 이동 및 수명 처리를 담당
 class PlayerBullet : public Component
@@ -31,11 +32,17 @@ public:
         // 충돌한 상대의 Collider 레이어를 확인하여 몬스터인지 판별
         Collider* curComponent = obj->GetComponent<Collider>();
         MeleeMonsterControl* curMeleeMonster = obj->GetComponent< MeleeMonsterControl>();
+        RangedMonsterControl* curRangedMonster = obj->GetComponent< RangedMonsterControl>();
 
-        if (curComponent && curComponent->layer == CollisionLayer::Monster)
+        if (curComponent && curComponent->layer == CollisionLayer::MeleeMonster)
         {
-            pOwner->isObjDead = true;
-            curMeleeMonster->getDamaged(1);
+          pOwner->isObjDead = true;
+          curMeleeMonster->getDamaged(1);
+        }
+        if (curComponent && curComponent->layer == CollisionLayer::RangedMonster)
+        {
+          pOwner->isObjDead = true;
+          curRangedMonster->getDamaged(1);
         }
     }
 

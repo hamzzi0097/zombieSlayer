@@ -7,6 +7,7 @@
 #include "Logger.hpp"
 #include "MonsterSpawner.hpp"
 #include "Collider.hpp"
+#include "MonsterBulletSpawner.hpp"
 
 // GraphicsContext 싱글톤 인스턴스 정의
 GraphicsContext* GraphicsContext::s_instance = nullptr;
@@ -72,7 +73,7 @@ int WINAPI WinMain(HINSTANCE hI, HINSTANCE, LPSTR, int nS)
  
     // 플레이어 오브젝트 구성
     GameObject* player = new GameObject(0.0f, 0.0f, 0.0f);
-    player->scale = { 0.08f, 0.08f, 1.0f };
+    player->scale = { 0.05f, 0.05f, 1.0f };
 
     player->AddComponent(new MeshRenderer(&playerMesh, &playerMaterial));   // 렌더링 컴포넌트 추가
     player->AddComponent(new PlayerController(gEngine.win.hWnd, &gEngine.win.Width, &gEngine.win.Height));  // 이동/회전 컴포넌트 추가
@@ -91,16 +92,14 @@ int WINAPI WinMain(HINSTANCE hI, HINSTANCE, LPSTR, int nS)
     std::random_device rd;
     std::mt19937 gen(rd()); 
     std::uniform_int_distribution<int> dis(1, 4);
-    /*MonsterSpawner mon(player, starShaders, CreateCircleVertices(1.0f, 256, XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f)));
-    for (int i = 0; i < 10; i++) {
-   
-      GameObject* monster = mon.generationMonster(dis(gen), 0);
-      gEngine.world.push_back(monster);
-   }*/
 
     MonsterSpawner mon(player, starShaders, CreateCircleVertices(1.0f, 256, XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f)));
-    for (int i = 0; i < 1; i++) {
-        GameObject* monster = mon.generationMonster(dis(gen), 0);
+    for (int i = 0; i < 5; i++) {
+        GameObject* monster = mon.generationMonster(dis(gen), i%2);
+        RangedMonsterControl* rangedMonster = monster ->GetComponent<RangedMonsterControl>();
+        if (rangedMonster) {
+          monster->AddComponent(new MonsterBulletSpawner(&gEngine.pendingObjects, &playerMesh, &playerMaterial, player));
+        }
         gEngine.world.push_back(monster);
     }
     
