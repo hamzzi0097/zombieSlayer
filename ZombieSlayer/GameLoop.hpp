@@ -113,19 +113,6 @@ private:
     }
 
     void Input() {
-        if (GetAsyncKeyState(VK_ESCAPE) & 0x8000) m_isRunning = false;
-
-        // Resize window (C key)
-        if (GetAsyncKeyState('C') & 0x0001) {
-            win.Width = 600; win.Height = 600;
-            RECT rc = { 0, 0, win.Width, win.Height };
-            AdjustWindowRect(&rc, WS_OVERLAPPEDWINDOW, FALSE);
-            SetWindowPos(win.hWnd, nullptr, 0, 0,
-                rc.right - rc.left, rc.bottom - rc.top,
-                SWP_NOMOVE | SWP_NOZORDER);
-            GraphicsContext::Get()->Resize(win.Width, win.Height);
-        }
-
         for (auto obj : world) obj->Input();
 
         switch (m_state) {
