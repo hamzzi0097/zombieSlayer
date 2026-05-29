@@ -135,6 +135,7 @@
     <ClInclude Include="HeartUI.hpp" />
     <ClInclude Include="MonsterBullet.hpp" />
     <ClInclude Include="MonsterSpawner.hpp" />
+    <ClInclude Include="MonsterSpawnManager.hpp" />
     <ClInclude Include="PlayerBullet.hpp" />
     <ClInclude Include="Framework.hpp" />
     <ClInclude Include="GameLoop.hpp" />
