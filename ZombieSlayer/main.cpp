@@ -89,20 +89,10 @@ int WINAPI WinMain(HINSTANCE hI, HINSTANCE, LPSTR, int nS)
 
     gEngine.world.push_back(player);
 
-    std::random_device rd;
-    std::mt19937 gen(rd()); 
-    std::uniform_int_distribution<int> dis(1, 4);
-
-    MonsterSpawner mon(player, starShaders, CreateCircleVertices(1.0f, 256, XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f)));
-    for (int i = 0; i < 5; i++) {
-        GameObject* monster = mon.generationMonster(dis(gen), i%2);
-        RangedMonsterControl* rangedMonster = monster ->GetComponent<RangedMonsterControl>();
-        if (rangedMonster) {
-          monster->AddComponent(new MonsterBulletSpawner(&gEngine.pendingObjects, &playerMesh, &playerMaterial, player));
-        }
-        gEngine.world.push_back(monster);
-    }
+    GameObject* mon = new GameObject(100, 100, 100);
+    mon->AddComponent(new MonsterSpawner(&gEngine.pendingObjects, player, starShaders, CreateCircleVertices(1.0f, 256, XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f))));
     
+    gEngine.world.push_back(mon);
     LOG_DEBUG("GameLoop Start!");
     gEngine.Run();
 
