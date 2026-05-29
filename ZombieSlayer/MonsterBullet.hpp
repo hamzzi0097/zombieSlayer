@@ -3,84 +3,84 @@
 #include "Collider.hpp"
 enum class  BulletState
 {
-  TRACE,
-  DEAD,
-  ATTACK
+    TRACE,
+    DEAD,
+    ATTACK
 };
 
 class MonsterBullet : public Component {
 private:
-  BulletState bulletState;
-  XMFLOAT2 moveDir;
-  GameObject* player;
-  float moveSpeed;
-  float lifeTime;
+    BulletState bulletState;
+    XMFLOAT2 moveDir;
+    GameObject* player;
+    float moveSpeed;
+    float lifeTime;
 
 public:
-  MonsterBullet(GameObject* player, float moveSpeed = 3.0f) {
-    bulletState = BulletState::TRACE;
-    this->player = player;
-    this->moveSpeed = moveSpeed;
-    moveDir = { 0.0f,0.0f };
-    lifeTime = 2.0f;
-  }
+    MonsterBullet(GameObject* player, float moveSpeed = 3.0f) {
+        bulletState = BulletState::TRACE;
+        this->player = player;
+        this->moveSpeed = moveSpeed;
+        moveDir = { 0.0f,0.0f };
+        lifeTime = 2.0f;
+    }
 
-  void Start()override {
+    void Start()override {
 
 
-    moveDir.x = player->pos.x - this->pOwner->pos.x;
-    moveDir.y = player->pos.y - this->pOwner->pos.y;
-    float len = sqrtf(moveDir.x * moveDir.x + moveDir.y * moveDir.y);
+        moveDir.x = player->pos.x - this->pOwner->pos.x;
+        moveDir.y = player->pos.y - this->pOwner->pos.y;
+        float len = sqrtf(moveDir.x * moveDir.x + moveDir.y * moveDir.y);
 
-    if (len > 0.0f)
+        if (len > 0.0f)
+        {
+            moveDir.x /= len;
+            moveDir.y /= len;
+        }
+        this->isStarted = true;
+    }
+
+    void Input()override {
+
+    }
+
+    void Update(float dt) override {
+        switch (bulletState)
+        {
+
+        case BulletState::TRACE:
+
+            this->pOwner->pos.x += moveDir.x * moveSpeed * dt;
+            this->pOwner->pos.y += moveDir.y * moveSpeed * dt;
+
+            lifeTime -= dt;
+            if (lifeTime <= 0.0f)
+            {
+                ChangeState(BulletState::DEAD);
+            }
+            break;
+        case BulletState::DEAD:
+            pOwner->isObjDead = true;
+            break;
+        case BulletState::ATTACK:
+            player->isObjDead = true;
+            pOwner->isObjDead = true;
+            break;
+        }
+    }
+
+    void Render() override {
+
+    }
+
+    void ChangeState(BulletState nextState) {
+        bulletState = nextState;
+    }
+    void OnCollision(GameObject* obj) override
     {
-      moveDir.x /= len;
-      moveDir.y /= len;
+        Collider* curObject = obj->GetComponent<Collider>();
+        if (curObject && curObject->layer == CollisionLayer::Player) {
+            ChangeState(BulletState::ATTACK);
+        }
     }
-    this->isStarted = true;
-  }
-
-  void Input()override {
-
-  }
-
-  void Update(float dt) override {
-    switch (bulletState)
-    {
-
-    case BulletState::TRACE:
-
-      this->pOwner->pos.x += moveDir.x * moveSpeed * dt;
-      this->pOwner->pos.y += moveDir.y * moveSpeed * dt;
-
-      lifeTime -= dt;
-      if (lifeTime <= 0.0f)
-      {
-        ChangeState(BulletState::DEAD);
-      }
-      break;
-    case BulletState::DEAD:
-      pOwner->isObjDead = true;
-      break;
-    case BulletState::ATTACK:
-      player->isObjDead = true;
-      pOwner->isObjDead = true;
-      break;
-    }
-  }
-
-  void Render() override {
-
-  }
-
-  void ChangeState(BulletState nextState) {
-    bulletState = nextState;
-  }
-  void OnCollision(GameObject* obj) override
-  {
-    Collider* curObject = obj->GetComponent<Collider>();
-    if (curObject && curObject->layer == CollisionLayer::Player) {
-      ChangeState(BulletState::ATTACK);
-    }
-  }
 };
