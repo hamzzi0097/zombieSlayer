@@ -5,7 +5,6 @@
 #include "RangedMonsterControl.hpp"
 #include "ObjectBase.hpp"
 #include "MonsterBulletSpawner.hpp"
-#include <iostream>
 
 class MonsterSpawner:public Component {
 private:
@@ -63,7 +62,7 @@ public:
 
         if (n) {
             generationMonster(pos, monsterNum);
-            std::cout << "!";
+            LOG_DEBUG("!");
             n--;
         }
 
