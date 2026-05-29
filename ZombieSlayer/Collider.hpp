@@ -6,7 +6,9 @@ enum class CollisionLayer
 {
     Player,
     PlayerBullet,
-    Monster
+    MeleeMonster,
+    RangedMonster,
+    MonsterBullet
 };
 
 enum class ColliderType

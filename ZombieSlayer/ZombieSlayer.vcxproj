@@ -126,9 +126,12 @@
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MeleeMonsterControl.hpp" />
+    <ClCompile Include="MonsterBulletSpawner.hpp" />
+    <ClCompile Include="RangedMonsterControl.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Collider.hpp" />
+    <ClInclude Include="MonsterBullet.hpp" />
     <ClInclude Include="MonsterSpawner.hpp" />
     <ClInclude Include="PlayerBullet.hpp" />
     <ClInclude Include="Framework.hpp" />
