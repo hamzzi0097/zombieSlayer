@@ -56,6 +56,9 @@
     <ClInclude Include="Timer.hpp">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="Texture.hpp">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
     <ClInclude Include="WindowContext.hpp">
       <Filter>헤더 파일</Filter>
     </ClInclude>
@@ -89,9 +92,15 @@
     <ClInclude Include="PlayerHealth.hpp">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="TextureMeshRenderer.hpp">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="effect.hlsl">
+      <Filter>리소스 파일</Filter>
+    </None>
+    <None Include="texture.hlsl">
       <Filter>리소스 파일</Filter>
     </None>
     <None Include="uiGradient.hlsl">

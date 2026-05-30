@@ -4,12 +4,13 @@
 #include "PlayerBullet.hpp"
 #include "Collider.hpp"
 #include "Logger.hpp"
+#include "TextureMeshRenderer.hpp"
 
 // 플레이어의 탄환 오브젝트 생성 컴포넌트
 class PlayerBulletSpawner : public Component
 {
     std::vector<GameObject*>* pendingObjects;   // GameLoop update 전에 넣어놓을 임시 vector
-    Mesh* bulletMesh;
+    TextureMesh* bulletMesh;
     Material* bulletMaterial;
 
     HWND hWnd;
@@ -26,7 +27,7 @@ class PlayerBulletSpawner : public Component
     bool wasLeftMouseDown;
 
 public:
-    PlayerBulletSpawner(std::vector<GameObject*>* pendingObjects, Mesh* bulletMesh,
+    PlayerBulletSpawner(std::vector<GameObject*>* pendingObjects, TextureMesh* bulletMesh,
         Material* bulletMaterial, HWND hWnd, int* width, int* height) : Component()
     {
         this->pendingObjects = pendingObjects;
@@ -149,8 +150,9 @@ private:
                 pOwner->pos.z
             );
 
-            bullet->scale = { 0.03f, 0.03f, 1.0f };
-            bullet->AddComponent(new MeshRenderer(bulletMesh, bulletMaterial));
+            bullet->rot.z = atan2f(fireDir.y, fireDir.x);
+            bullet->scale = { 0.08f, 0.08f, 1.0f };
+            bullet->AddComponent(new TextureMeshRenderer(bulletMesh, bulletMaterial));
             bullet->AddComponent(new PlayerBullet(fireDir));
 
             // 탄환 레이어 Collider

@@ -147,6 +147,8 @@
     <ClInclude Include="PlayerBulletSpawner.hpp" />
     <ClInclude Include="PlayerControl.hpp" />
     <ClInclude Include="PlayerHealth.hpp" />
+    <ClInclude Include="Texture.hpp" />
+    <ClInclude Include="TextureMeshRenderer.hpp" />
     <ClInclude Include="Timer.hpp" />
     <ClInclude Include="UIManager.hpp" />
     <ClInclude Include="WindowContext.hpp" />
@@ -159,6 +161,9 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
       <FileType>Document</FileType>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="texture.hlsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

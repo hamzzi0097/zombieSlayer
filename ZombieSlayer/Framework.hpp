@@ -9,10 +9,13 @@
 #include <string>
 #include <chrono>
 #include <random>
+#include <wincodec.h>
+#include <cstdint>
 
 #pragma comment(lib, "d3d11.lib")
 #pragma comment(lib, "dxgi.lib")
 #pragma comment(lib, "d3dcompiler.lib")
+#pragma comment(lib, "windowscodecs.lib")
 
 using namespace DirectX;
 
@@ -27,6 +30,12 @@ struct ConstantBuffer {
 
 struct ColorBuffer {
     XMFLOAT4 tintColor;
+};
+
+struct TextureVertex
+{
+    XMFLOAT3 pos;
+    XMFLOAT2 uv;
 };
 
 // 2. 셰이더 리소스 묶음

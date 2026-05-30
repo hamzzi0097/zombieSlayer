@@ -26,15 +26,34 @@ LRESULT CALLBACK GlobalWndProc(HWND h, UINT m, WPARAM w, LPARAM l) {
 // -----------------------------------------------------------------------------
 int WINAPI WinMain(HINSTANCE hI, HINSTANCE, LPSTR, int nS)
 {
+    HRESULT hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+
+    if (FAILED(hr) && hr != RPC_E_CHANGED_MODE)
+    {
+        LOG_ERROR("COM initialization failed.");
+        return -1;
+    }
+
     // 엔진 매니저 초기화
     GameLoop gEngine;
     if (!gEngine.Initialize(hI, GlobalWndProc)) {
         LOG_ERROR("Engine initialization failed.");
+
+        if (SUCCEEDED(hr))
+        {
+            CoUninitialize();
+        }
+
         return -1;
     }
 
     LOG_DEBUG("GameLoop Start!");
     gEngine.Run();
+
+    if (SUCCEEDED(hr))
+    {
+        CoUninitialize();
+    }
 
     return 0;
 }

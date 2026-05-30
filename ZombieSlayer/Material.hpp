@@ -1,6 +1,6 @@
 #pragma once
 #include "Framework.hpp"
-
+#include "Texture.hpp"
 class Material {
 public:
     ShaderSet shaders;
@@ -38,5 +38,29 @@ public:
         ColorBuffer cb = { color };
         context->UpdateSubresource(pColorBuffer, 0, nullptr, &cb, 0, 0);
         context->PSSetConstantBuffers(1, 1, &pColorBuffer);
+    }
+};
+
+class TextureMaterial : public Material {
+public:
+    Texture* texture = nullptr;
+
+    TextureMaterial(ShaderSet s, Texture* texture)
+        : Material(s), texture(texture)
+    {
+    }
+
+    void Bind() override {
+        ID3D11DeviceContext* context = GraphicsContext::Get()->ImmediateContext;
+
+        context->IASetInputLayout(shaders.layout);
+        context->VSSetShader(shaders.vs, nullptr, 0);
+        context->PSSetShader(shaders.ps, nullptr, 0);
+
+        if (texture)
+        {
+            context->PSSetShaderResources(0, 1, &texture->pSRV);
+            context->PSSetSamplers(0, 1, &texture->pSampler);
+        }
     }
 };

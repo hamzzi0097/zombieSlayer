@@ -13,6 +13,7 @@
 #include "HeartUI.hpp"
 #include "HitEffect.hpp"
 #include "PlayerHealth.hpp"
+#include "Texture.hpp"
 
 // 원 그리기
 std::vector<Vertex> CreateCircleVertices(float radius, int segments, XMFLOAT4 color)
@@ -32,6 +33,19 @@ std::vector<Vertex> CreateCircleVertices(float radius, int segments, XMFLOAT4 co
     return vertices;
 }
 
+std::vector<TextureVertex> CreateQuadVertices()
+{
+    return {
+        { { -1.0f, -1.0f, 0.0f }, { 0.0f, 1.0f } },
+        { { -1.0f,  1.0f, 0.0f }, { 0.0f, 0.0f } },
+        { {  1.0f,  1.0f, 0.0f }, { 1.0f, 0.0f } },
+
+        { { -1.0f, -1.0f, 0.0f }, { 0.0f, 1.0f } },
+        { {  1.0f,  1.0f, 0.0f }, { 1.0f, 0.0f } },
+        { {  1.0f, -1.0f, 0.0f }, { 1.0f, 1.0f } },
+    };
+}
+
 class GameLoop {
 public:
     enum class State { Lobby, Playing, GameOver };
@@ -42,11 +56,15 @@ public:
     std::vector<GameObject*> pendingObjects;
 
     ShaderSet shader;
+    ShaderSet textureShader;
+
+    TextureMesh* playerBulletTextureMesh = nullptr;
+    Texture* playerBulletTexture = nullptr;
+    TextureMaterial* playerBulletTextureMaterial = nullptr;
 
     // 게임 내내 재사용하는 리소스 (Initialize에서 1회 생성)
     Mesh*          playerMesh     = nullptr;
     ColorMaterial* playerMaterial = nullptr;
-    ColorMaterial* playerBulletMaterial = nullptr;  // 탄환 전용 ColorMaterial
 
     UIManager* uiManager = nullptr;
 
@@ -66,7 +84,10 @@ public:
         delete uiManager;      uiManager      = nullptr;
         delete playerMesh;     playerMesh     = nullptr;
         delete playerMaterial; playerMaterial = nullptr;
-        delete playerBulletMaterial; playerBulletMaterial = nullptr;
+        delete playerBulletTextureMaterial;
+        delete playerBulletTexture;
+        delete playerBulletTextureMesh;
+        textureShader.Release();
         GraphicsContext::Destroy();
         shader.Release();
         LOG_DEBUG("GameLoop Destroyed.");
@@ -89,6 +110,15 @@ public:
         // 셰이더 컴파일 및 생성
         shader = GraphicsContext::Get()->CompileAndCreate(L"effect.hlsl", 0, true, ied, 2);
 
+        D3D11_INPUT_ELEMENT_DESC textureIed[] = {
+        { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0,  D3D11_INPUT_PER_VERTEX_DATA, 0 },
+        { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,    0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+        };
+
+        textureShader = GraphicsContext::Get()->CompileAndCreate(
+            L"texture.hlsl", 0, true, textureIed, 2
+        );
+
         // 게임 내내 재사용하는 메시/머테리얼 리소스 1회 생성
         std::vector<Vertex> playerVertices =
             CreateCircleVertices(1.0f, 256, XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
@@ -97,7 +127,19 @@ public:
         playerMesh->Create(playerVertices);
 
         playerMaterial = new ColorMaterial(shader, XMFLOAT4(0.2f, 0.8f, 1.0f, 1.0f));
-        playerBulletMaterial = new ColorMaterial(shader, XMFLOAT4(1.0f, 0.9f, 0.2f, 1.0f));
+
+        playerBulletTextureMesh = new TextureMesh();
+        playerBulletTextureMesh->Create(CreateQuadVertices());
+
+        playerBulletTexture = new Texture();
+
+        if (!playerBulletTexture->Load(GraphicsContext::Get()->Device, L"Assets\\Textures\\bullet.png"))
+        {
+            LOG_ERROR("Failed to load bullet texture.");
+            return false;
+        }
+
+        playerBulletTextureMaterial = new TextureMaterial(textureShader, playerBulletTexture);
 
         return true;
     }
@@ -184,7 +226,7 @@ private:
             player->AddComponent(new PlayerController(win.hWnd, &win.Width, &win.Height));
             player->AddComponent(new PlayerHealth(3, 1.5f));
             player->AddComponent(new PlayerBulletSpawner(
-                &pendingObjects, playerMesh, playerBulletMaterial,
+                &pendingObjects, playerBulletTextureMesh, playerBulletTextureMaterial,
                 win.hWnd, &win.Width, &win.Height
             ));
             player->AddComponent(new CircleCollider(1.0f, CollisionLayer::Player));

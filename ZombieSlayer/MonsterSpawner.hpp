@@ -85,8 +85,8 @@ public:
     }
 
     void generationMonster(int genPos, int monster) { //genPos 1은 left, 2는 right, 3은 up, 4는 down
-        float positonX = (distrib(gen) - 100) / 100.0;
-        float positonY = (distrib(gen) - 100) / 100.0;
+        float positonX = (distrib(gen) - 100) / 100.0f;
+        float positonY = (distrib(gen) - 100) / 100.0f;
         left.y = positonY;
         right.y = positonY;
         up.x = positonX;
