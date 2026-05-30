@@ -9,6 +9,10 @@
 #include "PlayerControl.hpp"
 #include "MonsterSpawner.hpp"
 #include "MeshRenderer.hpp"
+#include "UIManager.hpp"
+#include "HeartUI.hpp"
+#include "HitEffect.hpp"
+#include "PlayerHealth.hpp"
 
 // 원 그리기
 std::vector<Vertex> CreateCircleVertices(float radius, int segments, XMFLOAT4 color)
@@ -42,6 +46,9 @@ public:
     // 게임 내내 재사용하는 리소스 (Initialize에서 1회 생성)
     Mesh*          playerMesh     = nullptr;
     ColorMaterial* playerMaterial = nullptr;
+    ColorMaterial* playerBulletMaterial = nullptr;  // 탄환 전용 ColorMaterial
+
+    UIManager* uiManager = nullptr;
 
     // Playing 진입 시 생성, GameOver 퇴장 시 world와 함께 삭제
     GameObject* player          = nullptr;
@@ -56,8 +63,10 @@ public:
         world.clear();
         for (auto obj : pendingObjects) delete obj;
         pendingObjects.clear();
+        delete uiManager;      uiManager      = nullptr;
         delete playerMesh;     playerMesh     = nullptr;
         delete playerMaterial; playerMaterial = nullptr;
+        delete playerBulletMaterial; playerBulletMaterial = nullptr;
         GraphicsContext::Destroy();
         shader.Release();
         LOG_DEBUG("GameLoop Destroyed.");
@@ -88,6 +97,7 @@ public:
         playerMesh->Create(playerVertices);
 
         playerMaterial = new ColorMaterial(shader, XMFLOAT4(0.2f, 0.8f, 1.0f, 1.0f));
+        playerBulletMaterial = new ColorMaterial(shader, XMFLOAT4(1.0f, 0.9f, 0.2f, 1.0f));
 
         return true;
     }
@@ -172,8 +182,9 @@ private:
             player->scale = { 0.08f, 0.08f, 1.0f };
             player->AddComponent(new MeshRenderer(playerMesh, playerMaterial));
             player->AddComponent(new PlayerController(win.hWnd, &win.Width, &win.Height));
+            player->AddComponent(new PlayerHealth(3, 1.5f));
             player->AddComponent(new PlayerBulletSpawner(
-                &pendingObjects, playerMesh, playerMaterial,
+                &pendingObjects, playerMesh, playerBulletMaterial,
                 win.hWnd, &win.Width, &win.Height
             ));
             player->AddComponent(new CircleCollider(1.0f, CollisionLayer::Player));
@@ -186,6 +197,19 @@ private:
 
             world.push_back(player);
             world.push_back(monsterSpawner);
+
+            // UI 컴포넌트를 UIManager에 직접 추가
+            HitEffect* hitEffect = new HitEffect();
+            uiManager = new UIManager();
+            uiManager->AddComponent(new HeartUI(shader, player));
+            uiManager->AddComponent(hitEffect);
+
+            // Health의 onDamaged 콜백에 HitEffect::Trigger() 등록
+            PlayerHealth* health = player->GetComponent<PlayerHealth>();
+            if (health)
+            {
+                health->onDamaged = [hitEffect]() { hitEffect->Trigger(); };
+            }
 
             break;
         }
@@ -207,17 +231,19 @@ private:
         case State::Lobby:    LOG_DEBUG("State Exit: Lobby");    break;
         case State::Playing:
             LOG_DEBUG("State Exit: Playing");
-            // Playing 종료 시 대기 중인 pendingObjects 제거
+            // Playing 종료 시 대기 중인 pendingObjects만 정리 (uiManager는 GameOver에서도 유지)
             for (auto obj : pendingObjects) delete obj;
             pendingObjects.clear();
             break;
         case State::GameOver:
             LOG_DEBUG("State Exit: GameOver");
-            // GameOver 종료 시 world의 모든 오브젝트 제거
+            // GameOver 종료 시 world + uiManager 모두 제거
             for (auto obj : world) delete obj;
             world.clear();
             player         = nullptr;   // world에서 이미 delete됨
             monsterSpawner = nullptr;
+            delete uiManager;
+            uiManager = nullptr;
             break;
         }
     }
@@ -230,14 +256,23 @@ private:
 
             if (GetAsyncKeyState(VK_ESCAPE) & 0x0001)
                 m_isRunning = false;
+
+            GetAsyncKeyState('1');  // 쓸모없는 입력 비트 소비
+                
             break;
         case State::Playing:
             for (auto obj : world) obj->Input();
+
+            GetAsyncKeyState(VK_ESCAPE);
+            GetAsyncKeyState(VK_SPACE);
+            GetAsyncKeyState('1');
 
             break;
         case State::GameOver:
             if (GetAsyncKeyState(VK_SPACE) & 0x0001)
                 ChangeState(State::Playing);
+
+            GetAsyncKeyState(VK_ESCAPE);    // 쓸모없는 입력 비트 소비
 
             if (GetAsyncKeyState('1') & 0x0001)
                 ChangeState(State::Lobby);
@@ -256,6 +291,7 @@ private:
             pendingObjects.clear();
 
             for (auto obj : world) obj->Update(dt);
+            if (uiManager) uiManager->Update(dt);
 
             // 이동 업데이트 이후 죽은 오브젝트 제거 전 충돌 검사
             CheckOnCollisions();
@@ -300,13 +336,26 @@ private:
             gfx->ImmediateContext->OMSetRenderTargets(1, &gfx->RTV, nullptr);
             gfx->ImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
+            float blendFactor[4] = { 0, 0, 0, 0 };
+            gfx->ImmediateContext->OMSetBlendState(gfx->AlphaBlendState, blendFactor, 0xffffffff);
+
             for (auto obj : world) obj->Render();
+            if (uiManager) uiManager->Render();  // UI는 항상 게임 오브젝트 위에 렌더링
             break;
         }
         case State::GameOver:
+        {
+            float col[] = { 0.05f, 0.05f, 0.05f, 1.0f };   // 어두운 배경
+            gfx->ImmediateContext->ClearRenderTargetView(gfx->RTV, col);
 
+            D3D11_VIEWPORT vp = { 0, 0, (float)win.Width, (float)win.Height, 0, 1 };
+            gfx->ImmediateContext->RSSetViewports(1, &vp);
+            gfx->ImmediateContext->OMSetRenderTargets(1, &gfx->RTV, nullptr);
+            gfx->ImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
+            if (uiManager) uiManager->Render();  // 하트 UI 유지 (0개 상태로 표시)
             break;
+        }
         }
         gfx->SwapChain->Present(gfx->VSync, 0);
     }
