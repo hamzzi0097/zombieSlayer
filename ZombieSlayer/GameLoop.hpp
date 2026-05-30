@@ -43,6 +43,7 @@ public:
     // 게임 내내 재사용하는 리소스 (Initialize에서 1회 생성)
     Mesh*          playerMesh     = nullptr;
     ColorMaterial* playerMaterial = nullptr;
+    ColorMaterial* playerBulletMaterial = nullptr;  // 탄환 전용 ColorMaterial
 
     // Playing 진입 시 생성, GameOver 퇴장 시 world와 함께 삭제
     GameObject* player          = nullptr;
@@ -59,6 +60,7 @@ public:
         pendingObjects.clear();
         delete playerMesh;     playerMesh     = nullptr;
         delete playerMaterial; playerMaterial = nullptr;
+        delete playerBulletMaterial; playerBulletMaterial = nullptr;
         GraphicsContext::Destroy();
         shader.Release();
         LOG_DEBUG("GameLoop Destroyed.");
@@ -89,6 +91,7 @@ public:
         playerMesh->Create(playerVertices);
 
         playerMaterial = new ColorMaterial(shader, XMFLOAT4(0.2f, 0.8f, 1.0f, 1.0f));
+        playerBulletMaterial = new ColorMaterial(shader, XMFLOAT4(1.0f, 0.9f, 0.2f, 1.0f));
 
         return true;
     }
@@ -173,9 +176,9 @@ private:
             player->scale = { 0.08f, 0.08f, 1.0f };
             player->AddComponent(new MeshRenderer(playerMesh, playerMaterial));
             player->AddComponent(new PlayerController(win.hWnd, &win.Width, &win.Height));
-            player->AddComponent(new PlayerHealth(3, 1.0f));
+            player->AddComponent(new PlayerHealth(3, 1.5f));
             player->AddComponent(new PlayerBulletSpawner(
-                &pendingObjects, playerMesh, playerMaterial,
+                &pendingObjects, playerMesh, playerBulletMaterial,
                 win.hWnd, &win.Width, &win.Height
             ));
             player->AddComponent(new CircleCollider(1.0f, CollisionLayer::Player));
@@ -303,6 +306,9 @@ private:
             gfx->ImmediateContext->RSSetViewports(1, &vp);
             gfx->ImmediateContext->OMSetRenderTargets(1, &gfx->RTV, nullptr);
             gfx->ImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+            float blendFactor[4] = { 0, 0, 0, 0 };
+            gfx->ImmediateContext->OMSetBlendState(gfx->AlphaBlendState, blendFactor, 0xffffffff);
 
             for (auto obj : world) obj->Render();
             break;

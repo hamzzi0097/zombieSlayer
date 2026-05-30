@@ -8,6 +8,8 @@ public:
     ID3D11DeviceContext*    ImmediateContext = nullptr;
     IDXGISwapChain*         SwapChain        = nullptr;
     ID3D11RenderTargetView* RTV              = nullptr;
+    ID3D11BlendState* AlphaBlendState = nullptr;
+
     HWND hWnd = nullptr;
     bool IsFullscreen = false;
     int  VSync        = 1;
@@ -126,6 +128,7 @@ private:
         if (SwapChain)        { SwapChain->Release();        SwapChain        = nullptr; }
         if (ImmediateContext) { ImmediateContext->Release(); ImmediateContext = nullptr; }
         if (Device)           { Device->Release();           Device           = nullptr; }
+        if (AlphaBlendState)  { AlphaBlendState->Release();  AlphaBlendState   = nullptr; }
     }
 
     bool Init(HWND hWnd, int w, int h) {
@@ -145,6 +148,18 @@ private:
             &sd, &SwapChain, &Device, nullptr, &ImmediateContext);
 
         if (FAILED(hr)) return false;
+
+        D3D11_BLEND_DESC blendDesc = {};
+        blendDesc.RenderTarget[0].BlendEnable = TRUE;
+        blendDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
+        blendDesc.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
+        blendDesc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
+        blendDesc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
+        blendDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
+        blendDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+        blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+
+        Device->CreateBlendState(&blendDesc, &AlphaBlendState);
         return CreateRTV(w, h);
     }
 

@@ -1,6 +1,8 @@
 #pragma once
 #include "ObjectBase.hpp"
 #include "Logger.hpp"
+#include "Material.hpp"
+#include "MeshRenderer.hpp"
 
 class PlayerHealth : public Component
 {
@@ -11,8 +13,15 @@ private:
     float invincibleRemainTime;
     float invincibleDuration;
 
+    ColorMaterial* playerMaterial = nullptr;
+
+    XMFLOAT4 normalColor = XMFLOAT4(0.2f, 0.8f, 1.0f, 1.0f);
+    XMFLOAT4 blinkColor = XMFLOAT4(0.2f, 0.8f, 1.0f, 0.5f);
+
+    int blinkCount = 3;
+
 public:
-    PlayerHealth(int lives = 3, float invincibleDuration = 1.0f)
+    PlayerHealth(int lives = 3, float invincibleDuration = 1.5f)
     {
         this->maxLives = lives;
         this->currentLives = lives;
@@ -57,6 +66,12 @@ public:
 
     void Start() override
     {
+        MeshRenderer* renderer = pOwner->GetComponent<MeshRenderer>();
+
+        if (renderer)
+        {
+            playerMaterial = dynamic_cast<ColorMaterial*>(renderer->GetMaterial());
+        }
     }
 
     void Input() override
@@ -69,8 +84,26 @@ public:
         {
             invincibleRemainTime -= dt;
 
-            if (invincibleRemainTime < 0.0f)
+            if (playerMaterial)
+            {
+                float elapsed = invincibleDuration - invincibleRemainTime;
+
+                float blinkInterval = invincibleDuration / (blinkCount * 2.0f);
+                int blinkStep = (int)(elapsed / blinkInterval);
+
+                if (blinkStep % 2 == 0)
+                    playerMaterial->SetColor(blinkColor);
+                else
+                    playerMaterial->SetColor(normalColor);
+            }
+
+            if (invincibleRemainTime <= 0.0f)
+            {
                 invincibleRemainTime = 0.0f;
+
+                if (playerMaterial)
+                    playerMaterial->SetColor(normalColor);
+            }
         }
     }
 

@@ -54,4 +54,9 @@ public:
 
     void Input() override {}
     void Update(float dt) override {}
+
+    Material* GetMaterial()
+    {
+        return pMaterial;
+    }
 };
