@@ -20,9 +20,10 @@ private:
     Mesh monsterMesh;
     ColorMaterial* monsterMaterial;
     std::vector<GameObject*>* pendingObjects;
-    int pos;
-    int monsterNum;
-    int n;
+    int maxMonsters;
+    int spawnedCount;
+    float timer;
+    float spawnInterval;
 public:
 
 
@@ -36,15 +37,16 @@ public:
         player(player),
         pendingObjects(pendingObjects),
         monsterVertices(monsterVertices), 
-        pos(1),
-        monsterNum(1)
+        maxMonsters(50),
+        spawnedCount(0),
+        timer(0.0f),
+        spawnInterval(2.0f)
     {
         monsterMesh.Create(monsterVertices);
         monsterMaterial = new ColorMaterial(
             starShaders,
             XMFLOAT4(0.8f, 0.2f, 0.2f, 1.0f)
         );
-        n = 5;
     }
 
     ~MonsterSpawner() {
@@ -59,11 +61,21 @@ public:
     }
 
     void Update(float dt) override {
+        timer += dt;
 
-        if (n) {
-            generationMonster(pos, monsterNum);
-            LOG_DEBUG("!");
-            n--;
+        if (timer >= spawnInterval && spawnedCount < maxMonsters) {
+            timer = 0.0f;
+
+            // 랜덤 방향, 랜덤 몬스터 종류 생성
+            int randomPos = (distrib(gen) % 4) + 1;       // 1~4
+            int randomMonster = distrib(gen) % 2;          // 0 or 1
+
+            generationMonster(randomPos, randomMonster);
+            spawnedCount++;
+
+            // 시간이 지날수록 간격 짧아지게
+            if (spawnInterval > 0.5f)
+                spawnInterval -= 0.05f;
         }
 
     }
