@@ -9,6 +9,7 @@
 #include "PlayerControl.hpp"
 #include "MonsterSpawner.hpp"
 #include "MeshRenderer.hpp"
+#include "PlayerHealth.hpp"
 
 // 원 그리기
 std::vector<Vertex> CreateCircleVertices(float radius, int segments, XMFLOAT4 color)
@@ -172,11 +173,14 @@ private:
             player->scale = { 0.08f, 0.08f, 1.0f };
             player->AddComponent(new MeshRenderer(playerMesh, playerMaterial));
             player->AddComponent(new PlayerController(win.hWnd, &win.Width, &win.Height));
+            player->AddComponent(new PlayerHealth(3, 1.0f));
             player->AddComponent(new PlayerBulletSpawner(
                 &pendingObjects, playerMesh, playerMaterial,
                 win.hWnd, &win.Width, &win.Height
             ));
             player->AddComponent(new CircleCollider(1.0f, CollisionLayer::Player));
+            
+
 
             // 몬스터 스포너 오브젝트 생성
             std::vector<Vertex> monsterVertices =
