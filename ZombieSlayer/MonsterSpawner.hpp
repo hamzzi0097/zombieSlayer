@@ -37,7 +37,7 @@ public:
         pendingObjects(pendingObjects),
         monsterVertices(monsterVertices), 
         pos(1),
-        monsterNum(1)
+        monsterNum(0)
     {
         monsterMesh.Create(monsterVertices);
         monsterMaterial = new ColorMaterial(

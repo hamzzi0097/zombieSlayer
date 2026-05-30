@@ -80,9 +80,24 @@
     <ClInclude Include="MonsterSpawnManager.hpp">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="Health.hpp">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="HeartUI.hpp">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="UIManager.hpp">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="HitEffect.hpp">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="effect.hlsl">
+      <Filter>리소스 파일</Filter>
+    </None>
+    <None Include="uiGradient.hlsl">
       <Filter>리소스 파일</Filter>
     </None>
   </ItemGroup>

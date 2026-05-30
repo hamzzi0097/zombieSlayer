@@ -2,6 +2,7 @@
 #include "ObjectBase.hpp"
 #include "Collider.hpp"
 #include "Health.hpp"
+#include "Logger.hpp"
 
 enum class  MeleeState
 {
@@ -72,8 +73,7 @@ public:
             // Health 컴포넌트가 있으면 목숨 1 감소, 없으면 즉사 처리
             if (Health* hp = player->GetComponent<Health>())
                 hp->TakeDamage();
-            else
-                player->isObjDead = true;
+
             ChangeState(MeleeState::TRACE); // 공격 후 다시 추적으로 전환
             break;
         }
@@ -85,6 +85,7 @@ public:
 
     void ChangeState(MeleeState nextState) {
         meleeState = nextState;
+        LOG_DEBUG("Next State : %d", nextState);
     }
     void getDamaged(int damage) {
         hp -= damage;
