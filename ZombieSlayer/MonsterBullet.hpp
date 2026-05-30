@@ -1,6 +1,7 @@
 #pragma once
 #include "ObjectBase.hpp"
 #include "Collider.hpp"
+#include "PlayerHealth.hpp"
 enum class  BulletState
 {
     TRACE,
@@ -63,7 +64,17 @@ public:
             pOwner->isObjDead = true;
             break;
         case BulletState::ATTACK:
-            player->isObjDead = true;
+            PlayerHealth* playerHealth = player->GetComponent<PlayerHealth>();
+
+            if (playerHealth)
+            {
+                playerHealth->TakeDamage();
+            }
+            else
+            {
+                player->isObjDead = true;
+            }
+
             pOwner->isObjDead = true;
             break;
         }

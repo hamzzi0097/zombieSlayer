@@ -8,6 +8,7 @@
 #include "MonsterSpawner.hpp"
 #include "Collider.hpp"
 #include "MonsterBulletSpawner.hpp"
+#include "HeartUI.hpp"
 
 // GraphicsContext 싱글톤 인스턴스 정의
 GraphicsContext* GraphicsContext::s_instance = nullptr;
