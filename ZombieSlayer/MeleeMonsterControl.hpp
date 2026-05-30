@@ -1,8 +1,8 @@
 #pragma once
 #include "ObjectBase.hpp"
 #include "Collider.hpp"
-#include "Health.hpp"
 #include "Logger.hpp"
+#include "PlayerHealth.hpp"
 
 enum class  MeleeState
 {
@@ -70,11 +70,14 @@ public:
             pOwner->isObjDead = true;
             break;
         case MeleeState::ATTACK:
-            // Health 컴포넌트가 있으면 목숨 1 감소, 없으면 즉사 처리
-            if (Health* hp = player->GetComponent<Health>())
-                hp->TakeDamage();
+            PlayerHealth* playerHealth = player->GetComponent<PlayerHealth>();
 
-            ChangeState(MeleeState::TRACE); // 공격 후 다시 추적으로 전환
+            if (playerHealth)
+            {
+                playerHealth->TakeDamage();
+            }
+
+            ChangeState(MeleeState::TRACE);
             break;
         }
     }
@@ -96,7 +99,15 @@ public:
     void OnCollision(GameObject* obj) override
     {
         Collider* curObject = obj->GetComponent<Collider>();
-        if (curObject && curObject->layer == CollisionLayer::Player) {
+        if (curObject && curObject->layer == CollisionLayer::Player)
+        {
+            PlayerHealth* playerHealth = obj->GetComponent<PlayerHealth>();
+
+            if (playerHealth && playerHealth->IsInvincible())
+            {
+                return;
+            }
+
             ChangeState(MeleeState::ATTACK);
         }
     }

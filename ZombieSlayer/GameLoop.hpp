@@ -12,7 +12,7 @@
 #include "UIManager.hpp"
 #include "HeartUI.hpp"
 #include "HitEffect.hpp"
-#include "Health.hpp"
+#include "PlayerHealth.hpp"
 
 // 원 그리기
 std::vector<Vertex> CreateCircleVertices(float radius, int segments, XMFLOAT4 color)
@@ -46,6 +46,7 @@ public:
     // 게임 내내 재사용하는 리소스 (Initialize에서 1회 생성)
     Mesh*          playerMesh     = nullptr;
     ColorMaterial* playerMaterial = nullptr;
+    ColorMaterial* playerBulletMaterial = nullptr;  // 탄환 전용 ColorMaterial
 
     UIManager* uiManager = nullptr;
 
@@ -65,6 +66,7 @@ public:
         delete uiManager;      uiManager      = nullptr;
         delete playerMesh;     playerMesh     = nullptr;
         delete playerMaterial; playerMaterial = nullptr;
+        delete playerBulletMaterial; playerBulletMaterial = nullptr;
         GraphicsContext::Destroy();
         shader.Release();
         LOG_DEBUG("GameLoop Destroyed.");
@@ -95,6 +97,7 @@ public:
         playerMesh->Create(playerVertices);
 
         playerMaterial = new ColorMaterial(shader, XMFLOAT4(0.2f, 0.8f, 1.0f, 1.0f));
+        playerBulletMaterial = new ColorMaterial(shader, XMFLOAT4(1.0f, 0.9f, 0.2f, 1.0f));
 
         return true;
     }
@@ -179,12 +182,12 @@ private:
             player->scale = { 0.08f, 0.08f, 1.0f };
             player->AddComponent(new MeshRenderer(playerMesh, playerMaterial));
             player->AddComponent(new PlayerController(win.hWnd, &win.Width, &win.Height));
+            player->AddComponent(new PlayerHealth(3, 1.5f));
             player->AddComponent(new PlayerBulletSpawner(
-                &pendingObjects, playerMesh, playerMaterial,
+                &pendingObjects, playerMesh, playerBulletMaterial,
                 win.hWnd, &win.Width, &win.Height
             ));
             player->AddComponent(new CircleCollider(1.0f, CollisionLayer::Player));
-            player->AddComponent(new Health(3));
 
             // 몬스터 스포너 오브젝트 생성
             std::vector<Vertex> monsterVertices =
@@ -202,8 +205,11 @@ private:
             uiManager->AddComponent(hitEffect);
 
             // Health의 onDamaged 콜백에 HitEffect::Trigger() 등록
-            Health* health = player->GetComponent<Health>();
-            health->onDamaged = [hitEffect]() { hitEffect->Trigger(); };
+            PlayerHealth* health = player->GetComponent<PlayerHealth>();
+            if (health)
+            {
+                health->onDamaged = [hitEffect]() { hitEffect->Trigger(); };
+            }
 
             break;
         }
@@ -329,6 +335,9 @@ private:
             gfx->ImmediateContext->RSSetViewports(1, &vp);
             gfx->ImmediateContext->OMSetRenderTargets(1, &gfx->RTV, nullptr);
             gfx->ImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+            float blendFactor[4] = { 0, 0, 0, 0 };
+            gfx->ImmediateContext->OMSetBlendState(gfx->AlphaBlendState, blendFactor, 0xffffffff);
 
             for (auto obj : world) obj->Render();
             if (uiManager) uiManager->Render();  // UI는 항상 게임 오브젝트 위에 렌더링

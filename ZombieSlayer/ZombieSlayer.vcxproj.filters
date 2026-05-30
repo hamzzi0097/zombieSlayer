@@ -77,12 +77,6 @@
     <ClInclude Include="MonsterBullet.hpp">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="MonsterSpawnManager.hpp">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="Health.hpp">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
     <ClInclude Include="HeartUI.hpp">
       <Filter>헤더 파일</Filter>
     </ClInclude>
@@ -90,6 +84,9 @@
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="HitEffect.hpp">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="PlayerHealth.hpp">
       <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>

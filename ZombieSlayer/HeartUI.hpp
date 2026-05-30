@@ -2,9 +2,7 @@
 #include "ObjectBase.hpp"
 #include "Mesh.hpp"
 #include "Material.hpp"
-
-// Health.hpp가 존재하는 브랜치에서는 아래 include를 활성화
-// #include "Health.hpp"
+#include "PlayerHealth.hpp"
 
 // [HeartUI 컴포넌트]
 // 플레이어의 Health 컴포넌트를 읽어 화면 왼쪽 하단에 하트 UI를 렌더링.
@@ -40,19 +38,15 @@ public:
     void Render() override {
         if (!m_cBuffer) return;
 
-        // Health 컴포넌트가 있으면 실제 목숨 수 반영, 없으면 최대치로 표시
         int lives = m_maxLives;
 
-// Health.hpp가 존재하는 브랜치에서는 아래 블록을 활성화
-/*
         if (m_player) {
-            Health* hp = m_player->GetComponent<Health>();
+            PlayerHealth* hp = m_player->GetComponent<PlayerHealth>();
             if (hp) {
                 lives      = hp->GetLives();
                 m_maxLives = hp->GetMaxLives();
             }
         }
-*/
 
         GraphicsContext* gfx = GraphicsContext::Get();
         const float aspect  = gfx->GetAspectRatio();
