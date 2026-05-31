@@ -11,6 +11,7 @@
 #include "MeshRenderer.hpp"
 #include "HeartUI.hpp"
 #include "HitEffect.hpp"
+#include "BombCooldownUI.hpp"
 #include "PlayerHealth.hpp"
 #include "BombSpawner.hpp"
 
@@ -122,6 +123,7 @@ public:
         playingUI = new GameObject(0.0f, 0.0f, 0.0f);
         playingUI->AddComponent(new HeartUI(shader, &player));
         playingUI->AddComponent(hitEffect);
+        playingUI->AddComponent(new BombCooldownUI(shader, &player));
 
         // GameOver 캔버스: player==nullptr이라 빈 하트로 표시됨 (결과 UI는 추후 추가)
         gameOverUI = new GameObject(0.0f, 0.0f, 0.0f);
