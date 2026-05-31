@@ -13,6 +13,7 @@
 #include "HeartUI.hpp"
 #include "HitEffect.hpp"
 #include "PlayerHealth.hpp"
+#include "BombSpawner.hpp"
 
 // 원 그리기
 std::vector<Vertex> CreateCircleVertices(float radius, int segments, XMFLOAT4 color)
@@ -45,6 +46,7 @@ public:
 
     // 게임 내내 재사용하는 리소스 (Initialize에서 1회 생성)
     Mesh*          playerMesh     = nullptr;
+    Mesh*          bombMesh       = nullptr;
     ColorMaterial* playerMaterial = nullptr;
     ColorMaterial* playerBulletMaterial = nullptr;  // 탄환 전용 ColorMaterial
 
@@ -67,6 +69,7 @@ public:
         delete playerMesh;     playerMesh     = nullptr;
         delete playerMaterial; playerMaterial = nullptr;
         delete playerBulletMaterial; playerBulletMaterial = nullptr;
+        delete bombMesh;       bombMesh       = nullptr;
         GraphicsContext::Destroy();
         shader.Release();
         LOG_DEBUG("GameLoop Destroyed.");
@@ -95,6 +98,12 @@ public:
 
         playerMesh = new Mesh();
         playerMesh->Create(playerVertices);
+
+        std::vector<Vertex> bombVertices =
+            CreateCircleVertices(1.0f, 64, XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
+
+        bombMesh = new Mesh();
+        bombMesh->Create(bombVertices);
 
         playerMaterial = new ColorMaterial(shader, XMFLOAT4(0.2f, 0.8f, 1.0f, 1.0f));
         playerBulletMaterial = new ColorMaterial(shader, XMFLOAT4(1.0f, 0.9f, 0.2f, 1.0f));
@@ -187,6 +196,7 @@ private:
                 &pendingObjects, playerMesh, playerBulletMaterial,
                 win.hWnd, &win.Width, &win.Height
             ));
+            player->AddComponent(new BombSpawner(&world, &pendingObjects, bombMesh, shader));
             player->AddComponent(new CircleCollider(1.0f, CollisionLayer::Player));
 
             // 몬스터 스포너 오브젝트 생성
