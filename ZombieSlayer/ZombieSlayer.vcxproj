@@ -130,6 +130,8 @@
     <ClCompile Include="RangedMonsterControl.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Bomb.hpp" />
+    <ClInclude Include="BombSpawner.hpp" />
     <ClInclude Include="Collider.hpp" />
     <ClInclude Include="HeartUI.hpp" />
     <ClInclude Include="HitEffect.hpp" />
