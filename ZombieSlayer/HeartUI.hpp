@@ -6,13 +6,15 @@
 
 // [HeartUI 컴포넌트]
 // 플레이어의 Health 컴포넌트를 읽어 화면 왼쪽 하단에 하트 UI를 렌더링.
-// UIManager가 소유하는 별도 GameObject에 부착해 플레이어와 생명주기를 분리한다.
+// UI 루트 GameObject에 부착해 플레이어와 생명주기를 분리한다.
+// player를 이중 포인터(GameObject**)로 받아, 플레이어가 매 라운드 재생성돼도
+// 항상 현재 플레이어를 가리킨다. player==nullptr이면 빈 하트(0개)로 표시된다.
 // 하트 메시: 파라메트릭 방정식 x=16sin³t, y=13cos t-5cos 2t-2cos 3t-cos 4t
 // 색상: 남은 목숨 > 1 → 빨강 / 목숨 1 → 주황(경고) / 빈 하트 → 어두운 회색
 class HeartUI : public Component {
 public:
-    HeartUI(ShaderSet shaders, GameObject* player, int maxLives = 3)
-        : m_shaders(shaders), m_player(player), m_maxLives(maxLives) {}
+    HeartUI(ShaderSet shaders, GameObject** playerPtr, int maxLives = 3)
+        : m_shaders(shaders), m_playerPtr(playerPtr), m_maxLives(maxLives) {}
 
     ~HeartUI() {
         if (m_cBuffer) m_cBuffer->Release();
@@ -38,10 +40,12 @@ public:
     void Render() override {
         if (!m_cBuffer) return;
 
-        int lives = m_maxLives;
+        GameObject* player = m_playerPtr ? *m_playerPtr : nullptr;
 
-        if (m_player) {
-            PlayerHealth* hp = m_player->GetComponent<PlayerHealth>();
+        int lives = 0;   // 플레이어 없음(로비/게임오버) → 빈 하트
+
+        if (player) {
+            PlayerHealth* hp = player->GetComponent<PlayerHealth>();
             if (hp) {
                 lives      = hp->GetLives();
                 m_maxLives = hp->GetMaxLives();
@@ -87,8 +91,8 @@ public:
 
 private:
     ShaderSet      m_shaders;
-    GameObject*    m_player   = nullptr;
-    int            m_maxLives = 3;
+    GameObject**   m_playerPtr = nullptr;
+    int            m_maxLives  = 3;
     Mesh           m_heartMesh;
     ColorMaterial* m_matFull  = nullptr;
     ColorMaterial* m_matLow   = nullptr;

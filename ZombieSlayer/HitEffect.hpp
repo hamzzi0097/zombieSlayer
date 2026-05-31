@@ -5,7 +5,7 @@
 
 // [HitEffect 컴포넌트]
 // 피격 시 화면 가장자리 4면에 빨간 반투명 쿼드를 표시하고 서서히 fade out.
-// UIManager 소유 오브젝트에 부착. HitListener가 Trigger()를 호출한다.
+// UI 루트 GameObject에 부착. PlayerHealth의 onDamaged 콜백이 Trigger()를 호출한다.
 class HitEffect : public Component {
 public:
     HitEffect() {}
