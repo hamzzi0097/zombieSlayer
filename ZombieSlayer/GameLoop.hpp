@@ -15,6 +15,9 @@
 #include "PlayerHealth.hpp"
 #include "BombSpawner.hpp"
 #include "StatsUI.hpp"
+#include "TextUI.hpp"
+#include "ResultUI.hpp"
+#include "Background.hpp"
 
 // 원 그리기
 std::vector<Vertex> CreateCircleVertices(float radius, int segments, XMFLOAT4 color)
@@ -44,6 +47,7 @@ public:
     std::vector<GameObject*> pendingObjects;
 
     ShaderSet shader;
+    ShaderSet textureShader; // 텍스처 매핑용 셰이더(texture.hlsl)
 
     // 게임 내내 재사용하는 리소스 (Initialize에서 1회 생성)
     Mesh*          playerMesh     = nullptr;
@@ -56,6 +60,7 @@ public:
     GameObject* playingUI  = nullptr;
     GameObject* gameOverUI = nullptr;
     GameObject* lobbyUI    = nullptr;
+    GameObject* background = nullptr;   // Playing 배경(텍스처) — world보다 먼저 렌더
     HitEffect*  hitEffect  = nullptr;   // 라운드마다 onDamaged 콜백 재바인딩용 핸들
 
     // Playing 진입 시 생성, GameOver 퇴장 시 world와 함께 삭제
@@ -79,12 +84,15 @@ public:
         delete playingUI;      playingUI      = nullptr;
         delete gameOverUI;     gameOverUI     = nullptr;
         delete lobbyUI;        lobbyUI        = nullptr;
+        delete background;     background     = nullptr;
         delete playerMesh;     playerMesh     = nullptr;
         delete playerMaterial; playerMaterial = nullptr;
         delete playerBulletMaterial; playerBulletMaterial = nullptr;
         delete bombMesh;       bombMesh       = nullptr;
         GraphicsContext::Destroy();
         shader.Release();
+        textureShader.Release();
+        CoUninitialize();
         LOG_DEBUG("GameLoop Destroyed.");
     }
 
@@ -93,6 +101,9 @@ public:
     /// </summary>
     bool Initialize(HINSTANCE hInst, LRESULT(CALLBACK* wndProc)(HWND, UINT, WPARAM, LPARAM),
                     int w = 800, int h = 600) {
+        // WIC(텍스처 로딩)는 COM 기반이라 스레드에서 1회 초기화 필요
+        CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
+
         if (!win.Initialize(hInst, w, h, wndProc)) return false;
 
         if (!GraphicsContext::Create(win.hWnd, w, h)) return false;
@@ -104,6 +115,13 @@ public:
 
         // 셰이더 컴파일 및 생성
         shader = GraphicsContext::Get()->CompileAndCreate(L"effect.hlsl", 0, true, ied, 2);
+
+        // 텍스처 셰이더: POSITION(offset 0) + TEXCOORD(offset 28). COLOR(offset 12)는 건너뜀.
+        D3D11_INPUT_ELEMENT_DESC tied[] = {
+        { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0,  0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+        { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,    0, 28, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+        };
+        textureShader = GraphicsContext::Get()->CompileAndCreate(L"texture.hlsl", 0, true, tied, 2);
 
         // 게임 내내 재사용하는 메시/머테리얼 리소스 1회 생성
         std::vector<Vertex> playerVertices =
@@ -132,12 +150,22 @@ public:
         playingUI->AddComponent(new BombCooldownUI(shader, &player));
         playingUI->AddComponent(new StatsUI(shader, &m_killCount, &m_playTime)); // 상단: 시간 + 킬
 
-        // GameOver 캔버스: player==nullptr이라 빈 하트로 표시됨 (결과 UI는 추후 추가)
+        // GameOver 캔버스: player==nullptr이라 빈 하트로 표시됨.
+        // m_killCount/m_playTime은 다음 라운드 진입 전까지 최종값 유지 → 결과 표시에 사용.
         gameOverUI = new GameObject(0.0f, 0.0f, 0.0f);
-        gameOverUI->AddComponent(new HeartUI(shader, &player));
+        //gameOverUI->AddComponent(new HeartUI(shader, &player));
+        gameOverUI->AddComponent(new TextUI(shader, "GAME OVER",
+            0.0f, 0.40f, 0.22f, XMFLOAT4(1.0f, 0.2f, 0.2f, 1.0f)));     // 타이틀, 빨강
+        gameOverUI->AddComponent(new ResultUI(shader, &m_killCount, &m_playTime)); // 시간/킬 점수
+        gameOverUI->AddComponent(new TextUI(shader, "SPACE:RESTART  1:LOBBY",
+            0.0f, -0.55f, 0.06f, XMFLOAT4(0.6f, 0.6f, 0.6f, 1.0f)));    // 안내, 회색
 
         // Lobby 캔버스: 타이틀 UI는 추후 추가
         lobbyUI = new GameObject(0.0f, 0.0f, 0.0f);
+
+        // 배경(텍스처 매핑 테스트): 장판 타일 이미지를 화면 전체에 깔기
+        background = new GameObject(0.0f, 0.0f, 0.0f);
+        background->AddComponent(new Background(textureShader, L"bg.png"));
 
         return true;
     }
@@ -324,6 +352,7 @@ private:
             break;
         case State::Playing:
             m_playTime += dt; // 생존 시간 누적
+            background->Update(dt); // 첫 프레임 Start() 트리거(텍스처 로드)
 
             // 생성 예약된 오브젝트를 world로 push_back
             for (auto obj : pendingObjects) world.push_back(obj);
@@ -385,6 +414,7 @@ private:
             float blendFactor[4] = { 0, 0, 0, 0 };
             gfx->ImmediateContext->OMSetBlendState(gfx->AlphaBlendState, blendFactor, 0xffffffff);
 
+            background->Render();  // 배경을 가장 먼저(가장 뒤에) 그림
             for (auto obj : world) obj->Render();
             playingUI->Render();  // UI는 항상 게임 오브젝트 위에 렌더링
             break;
