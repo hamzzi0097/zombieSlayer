@@ -150,6 +150,7 @@
     <ClInclude Include="PlayerBulletSpawner.hpp" />
     <ClInclude Include="PlayerControl.hpp" />
     <ClInclude Include="PlayerHealth.hpp" />
+    <ClInclude Include="StatsUI.hpp" />
     <ClInclude Include="Timer.hpp" />
     <ClInclude Include="WindowContext.hpp" />
   </ItemGroup>

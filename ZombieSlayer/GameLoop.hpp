@@ -14,6 +14,7 @@
 #include "BombCooldownUI.hpp"
 #include "PlayerHealth.hpp"
 #include "BombSpawner.hpp"
+#include "StatsUI.hpp"
 
 // 원 그리기
 std::vector<Vertex> CreateCircleVertices(float radius, int segments, XMFLOAT4 color)
@@ -60,6 +61,11 @@ public:
     // Playing 진입 시 생성, GameOver 퇴장 시 world와 함께 삭제
     GameObject* player          = nullptr;
     GameObject* monsterSpawner  = nullptr;
+
+    // StatsUI 데이터 소스 — 주소를 StatsUI에 넘겨 매 프레임 읽게 한다.
+    // GameLoop 멤버라 주소가 안정적이며, OnEnter(Playing)에서 0으로 리셋한다.
+    int   m_killCount = 0;     // 현재 라운드 누적 킬
+    float m_playTime  = 0.0f;  // 현재 라운드 생존 시간(초)
 
     GameLoop() {
         LOG_DEBUG("GameLoop Created.");
@@ -124,6 +130,7 @@ public:
         playingUI->AddComponent(new HeartUI(shader, &player));
         playingUI->AddComponent(hitEffect);
         playingUI->AddComponent(new BombCooldownUI(shader, &player));
+        playingUI->AddComponent(new StatsUI(shader, &m_killCount, &m_playTime)); // 상단: 시간 + 킬
 
         // GameOver 캔버스: player==nullptr이라 빈 하트로 표시됨 (결과 UI는 추후 추가)
         gameOverUI = new GameObject(0.0f, 0.0f, 0.0f);
@@ -209,6 +216,10 @@ private:
         {
             LOG_DEBUG("State Enter: Playing");
             LOG_INFO("Game Start! Survive as long as you can.");
+
+            // 라운드 통계 리셋 (StatsUI가 이 멤버들의 주소를 읽고 있음)
+            m_killCount = 0;
+            m_playTime  = 0.0f;
 
             // 플레이어 오브젝트 생성
             player = new GameObject(0.0f, 0.0f, 0.0f);
@@ -312,6 +323,8 @@ private:
             lobbyUI->Update(dt);
             break;
         case State::Playing:
+            m_playTime += dt; // 생존 시간 누적
+
             // 생성 예약된 오브젝트를 world로 push_back
             for (auto obj : pendingObjects) world.push_back(obj);
             pendingObjects.clear();
@@ -331,6 +344,13 @@ private:
             // 죽음 표시된 오브젝트를 world에서 제거
             for (auto obj = world.begin(); obj != world.end(); ) {
                 if ((*obj)->isObjDead) {
+                    // 몬스터가 죽어서 제거되는 경우 → 킬 1 증가.
+                    // 몬스터는 불릿/폭탄 모두 getDamaged()→DEAD→isObjDead 경로로만
+                    // 죽으므로, 제거 시점에서 세면 사망 원인과 무관하게 정확히 카운트된다.
+                    if ((*obj)->GetComponent<MeleeMonsterControl>() ||
+                        (*obj)->GetComponent<RangedMonsterControl>()) {
+                        m_killCount++;
+                    }
                     delete* obj;
                     obj = world.erase(obj);
                     continue;
