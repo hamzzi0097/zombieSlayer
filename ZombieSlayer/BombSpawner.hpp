@@ -28,6 +28,14 @@ public:
 
     void Start() override {}
 
+    // 폭탄 쿨다운 진행도. 0 = 방금 사용, 1 = 사용 준비 완료.
+    // UI(BombCooldownUI)가 매 프레임 읽어 파이 게이지를 채움.
+    float GetCooldownRatio() const
+    {
+        if (cooldownTimer <= 0.0f) return 1.0f;
+        return 1.0f - (cooldownTimer / cooldown);
+    }
+
     void Input() override
     {
         bool isRightMouseDown = (GetAsyncKeyState(VK_RBUTTON) & 0x8000) != 0;

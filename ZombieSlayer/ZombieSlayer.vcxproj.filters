@@ -80,7 +80,7 @@
     <ClInclude Include="HeartUI.hpp">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="UIManager.hpp">
+    <ClInclude Include="BombCooldownUI.hpp">
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="HitEffect.hpp">

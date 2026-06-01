@@ -131,6 +131,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Bomb.hpp" />
+    <ClInclude Include="BombCooldownUI.hpp" />
     <ClInclude Include="BombSpawner.hpp" />
     <ClInclude Include="Collider.hpp" />
     <ClInclude Include="HeartUI.hpp" />
@@ -149,8 +150,8 @@
     <ClInclude Include="PlayerBulletSpawner.hpp" />
     <ClInclude Include="PlayerControl.hpp" />
     <ClInclude Include="PlayerHealth.hpp" />
+    <ClInclude Include="StatsUI.hpp" />
     <ClInclude Include="Timer.hpp" />
-    <ClInclude Include="UIManager.hpp" />
     <ClInclude Include="WindowContext.hpp" />
   </ItemGroup>
   <ItemGroup>

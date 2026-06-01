@@ -9,11 +9,12 @@
 #include "PlayerControl.hpp"
 #include "MonsterSpawner.hpp"
 #include "MeshRenderer.hpp"
-#include "UIManager.hpp"
 #include "HeartUI.hpp"
 #include "HitEffect.hpp"
+#include "BombCooldownUI.hpp"
 #include "PlayerHealth.hpp"
 #include "BombSpawner.hpp"
+#include "StatsUI.hpp"
 
 // 원 그리기
 std::vector<Vertex> CreateCircleVertices(float radius, int segments, XMFLOAT4 color)
@@ -50,11 +51,21 @@ public:
     ColorMaterial* playerMaterial = nullptr;
     ColorMaterial* playerBulletMaterial = nullptr;  // 탄환 전용 ColorMaterial
 
-    UIManager* uiManager = nullptr;
+    // UI 루트 GameObject (= 상태별 캔버스). Initialize에서 1회 생성, 소멸자에서 1회 정리.
+    // 패널은 별도 클래스 없이 "끌 수 있는 GameObject"로 두고, 상태 루프가 해당 UI만 구동한다.
+    GameObject* playingUI  = nullptr;
+    GameObject* gameOverUI = nullptr;
+    GameObject* lobbyUI    = nullptr;
+    HitEffect*  hitEffect  = nullptr;   // 라운드마다 onDamaged 콜백 재바인딩용 핸들
 
     // Playing 진입 시 생성, GameOver 퇴장 시 world와 함께 삭제
     GameObject* player          = nullptr;
     GameObject* monsterSpawner  = nullptr;
+
+    // StatsUI 데이터 소스 — 주소를 StatsUI에 넘겨 매 프레임 읽게 한다.
+    // GameLoop 멤버라 주소가 안정적이며, OnEnter(Playing)에서 0으로 리셋한다.
+    int   m_killCount = 0;     // 현재 라운드 누적 킬
+    float m_playTime  = 0.0f;  // 현재 라운드 생존 시간(초)
 
     GameLoop() {
         LOG_DEBUG("GameLoop Created.");
@@ -65,7 +76,9 @@ public:
         world.clear();
         for (auto obj : pendingObjects) delete obj;
         pendingObjects.clear();
-        delete uiManager;      uiManager      = nullptr;
+        delete playingUI;      playingUI      = nullptr;
+        delete gameOverUI;     gameOverUI     = nullptr;
+        delete lobbyUI;        lobbyUI        = nullptr;
         delete playerMesh;     playerMesh     = nullptr;
         delete playerMaterial; playerMaterial = nullptr;
         delete playerBulletMaterial; playerBulletMaterial = nullptr;
@@ -107,6 +120,24 @@ public:
 
         playerMaterial = new ColorMaterial(shader, XMFLOAT4(0.2f, 0.8f, 1.0f, 1.0f));
         playerBulletMaterial = new ColorMaterial(shader, XMFLOAT4(1.0f, 0.9f, 0.2f, 1.0f));
+
+        // ── UI 캔버스 1회 구성 ──────────────────────────────────────────────
+        // 패널 = 끌 수 있는 GameObject. 요소 = Component. player는 이중 포인터(&player)로
+        // 넘겨 라운드마다 재생성돼도 항상 현재 플레이어를 가리키게 한다.
+        hitEffect = new HitEffect();
+
+        playingUI = new GameObject(0.0f, 0.0f, 0.0f);
+        playingUI->AddComponent(new HeartUI(shader, &player));
+        playingUI->AddComponent(hitEffect);
+        playingUI->AddComponent(new BombCooldownUI(shader, &player));
+        playingUI->AddComponent(new StatsUI(shader, &m_killCount, &m_playTime)); // 상단: 시간 + 킬
+
+        // GameOver 캔버스: player==nullptr이라 빈 하트로 표시됨 (결과 UI는 추후 추가)
+        gameOverUI = new GameObject(0.0f, 0.0f, 0.0f);
+        gameOverUI->AddComponent(new HeartUI(shader, &player));
+
+        // Lobby 캔버스: 타이틀 UI는 추후 추가
+        lobbyUI = new GameObject(0.0f, 0.0f, 0.0f);
 
         return true;
     }
@@ -186,6 +217,10 @@ private:
             LOG_DEBUG("State Enter: Playing");
             LOG_INFO("Game Start! Survive as long as you can.");
 
+            // 라운드 통계 리셋 (StatsUI가 이 멤버들의 주소를 읽고 있음)
+            m_killCount = 0;
+            m_playTime  = 0.0f;
+
             // 플레이어 오브젝트 생성
             player = new GameObject(0.0f, 0.0f, 0.0f);
             player->scale = { 0.08f, 0.08f, 1.0f };
@@ -208,17 +243,11 @@ private:
             world.push_back(player);
             world.push_back(monsterSpawner);
 
-            // UI 컴포넌트를 UIManager에 직접 추가
-            HitEffect* hitEffect = new HitEffect();
-            uiManager = new UIManager();
-            uiManager->AddComponent(new HeartUI(shader, player));
-            uiManager->AddComponent(hitEffect);
-
-            // Health의 onDamaged 콜백에 HitEffect::Trigger() 등록
+            // UI는 Initialize에서 이미 구성됨. 새 player의 Health 콜백만 재바인딩.
             PlayerHealth* health = player->GetComponent<PlayerHealth>();
             if (health)
             {
-                health->onDamaged = [hitEffect]() { hitEffect->Trigger(); };
+                health->onDamaged = [this]() { hitEffect->Trigger(); };
             }
 
             break;
@@ -247,13 +276,11 @@ private:
             break;
         case State::GameOver:
             LOG_DEBUG("State Exit: GameOver");
-            // GameOver 종료 시 world + uiManager 모두 제거
+            // GameOver 종료 시 world만 제거 (UI 캔버스는 영속, 소멸자에서 정리)
             for (auto obj : world) delete obj;
             world.clear();
             player         = nullptr;   // world에서 이미 delete됨
             monsterSpawner = nullptr;
-            delete uiManager;
-            uiManager = nullptr;
             break;
         }
     }
@@ -293,15 +320,17 @@ private:
     void Update(float dt) {
         switch (m_state) {
         case State::Lobby:
-
+            lobbyUI->Update(dt);
             break;
         case State::Playing:
+            m_playTime += dt; // 생존 시간 누적
+
             // 생성 예약된 오브젝트를 world로 push_back
             for (auto obj : pendingObjects) world.push_back(obj);
             pendingObjects.clear();
 
             for (auto obj : world) obj->Update(dt);
-            if (uiManager) uiManager->Update(dt);
+            playingUI->Update(dt);
 
             // 이동 업데이트 이후 죽은 오브젝트 제거 전 충돌 검사
             CheckOnCollisions();
@@ -315,6 +344,13 @@ private:
             // 죽음 표시된 오브젝트를 world에서 제거
             for (auto obj = world.begin(); obj != world.end(); ) {
                 if ((*obj)->isObjDead) {
+                    // 몬스터가 죽어서 제거되는 경우 → 킬 1 증가.
+                    // 몬스터는 불릿/폭탄 모두 getDamaged()→DEAD→isObjDead 경로로만
+                    // 죽으므로, 제거 시점에서 세면 사망 원인과 무관하게 정확히 카운트된다.
+                    if ((*obj)->GetComponent<MeleeMonsterControl>() ||
+                        (*obj)->GetComponent<RangedMonsterControl>()) {
+                        m_killCount++;
+                    }
                     delete* obj;
                     obj = world.erase(obj);
                     continue;
@@ -325,7 +361,7 @@ private:
             }
             break;
         case State::GameOver:
-
+            gameOverUI->Update(dt);
             break;
         }
     }
@@ -350,7 +386,7 @@ private:
             gfx->ImmediateContext->OMSetBlendState(gfx->AlphaBlendState, blendFactor, 0xffffffff);
 
             for (auto obj : world) obj->Render();
-            if (uiManager) uiManager->Render();  // UI는 항상 게임 오브젝트 위에 렌더링
+            playingUI->Render();  // UI는 항상 게임 오브젝트 위에 렌더링
             break;
         }
         case State::GameOver:
@@ -363,7 +399,7 @@ private:
             gfx->ImmediateContext->OMSetRenderTargets(1, &gfx->RTV, nullptr);
             gfx->ImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-            if (uiManager) uiManager->Render();  // 하트 UI 유지 (0개 상태로 표시)
+            gameOverUI->Render();  // player==null → 빈 하트 (0개 상태로 표시)
             break;
         }
         }
