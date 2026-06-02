@@ -115,6 +115,12 @@
     <None Include="bg.png">
       <Filter>리소스 파일</Filter>
     </None>
+    <None Include="bomb.png">
+      <Filter>리소스 파일</Filter>
+    </None>
+    <None Include="bomb_effect.png">
+      <Filter>리소스 파일</Filter>
+    </None>
     <None Include="player.png">
       <Filter>리소스 파일</Filter>
     </None>

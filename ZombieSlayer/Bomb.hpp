@@ -17,36 +17,55 @@ class Bomb : public Component
 {
 private:
     std::vector<GameObject*>* world;
-    ColorMaterial* material = nullptr;
+    ColorMaterial* fallbackMaterial = nullptr;
+    TextureMaterial* bombMaterial = nullptr;
+    TextureMaterial* effectMaterial = nullptr;
+    Mesh* effectMesh = nullptr;
 
     BombState state = BombState::Fuse;
 
     float fuseTime = 2.0f;
     float fuseTimer = 2.0f;
 
-    float explosionDuration = 0.3f;
-    float explosionTimer = 0.3f;
+    float explosionDuration = 0.7f;
+    float explosionTimer = 0.7f;
     float explosionRadius = 0.35f;
 
     float startScale = 0.06f;
     int damage = 5;
 
 public:
-    Bomb(std::vector<GameObject*>* world, ShaderSet shader)
+    Bomb(std::vector<GameObject*>* world, ShaderSet colorShader, ShaderSet textureShader,
+        Texture* bombTexture = nullptr, Texture* effectTexture = nullptr, Mesh* effectMesh = nullptr)
     {
         this->world = world;
-        material = new ColorMaterial(shader, XMFLOAT4(1.0f, 0.8f, 0.1f, 1.0f));
+        this->effectMesh = effectMesh;
+
+        if (bombTexture && effectTexture)
+        {
+            bombMaterial = new TextureMaterial(textureShader, bombTexture);
+            effectMaterial = new TextureMaterial(textureShader, effectTexture);
+        }
+        else
+        {
+            fallbackMaterial = new ColorMaterial(colorShader, XMFLOAT4(1.0f, 0.8f, 0.1f, 1.0f));
+        }
     }
 
     ~Bomb()
     {
-        delete material;
-        material = nullptr;
+        delete fallbackMaterial;
+        fallbackMaterial = nullptr;
+        delete bombMaterial;
+        bombMaterial = nullptr;
+        delete effectMaterial;
+        effectMaterial = nullptr;
     }
 
-    ColorMaterial* GetMaterial() const
+    Material* GetMaterial() const
     {
-        return material;
+        if (bombMaterial) return bombMaterial;
+        return fallbackMaterial;
     }
 
     void Start() override
@@ -68,6 +87,8 @@ public:
                 ApplyDamage();
                 ScreenShake::Trigger(0.25f, 0.04f);
                 state = BombState::Exploding;
+                explosionTimer = explosionDuration;
+                SwitchToExplosionEffect();
             }
         }
         else if (state == BombState::Exploding)
@@ -89,10 +110,41 @@ public:
     void Render() override {}
 
 private:
+    void SetVisualAlpha(float alpha)
+    {
+        if (bombMaterial && state == BombState::Fuse)
+            bombMaterial->SetTint(XMFLOAT4(1.0f, 1.0f, 1.0f, alpha));
+
+        if (effectMaterial && state == BombState::Exploding)
+            effectMaterial->SetTint(XMFLOAT4(1.0f, 1.0f, 1.0f, alpha));
+
+        if (fallbackMaterial)
+        {
+            if (state == BombState::Fuse)
+                fallbackMaterial->SetColor(XMFLOAT4(1.0f, 0.8f, 0.1f, alpha));
+            else
+                fallbackMaterial->SetColor(XMFLOAT4(0.9f, 0.9f, 0.9f, alpha));
+        }
+    }
+
+    void SwitchToExplosionEffect()
+    {
+        MeshRenderer* renderer = pOwner->GetComponent<MeshRenderer>();
+
+        if (renderer && effectMaterial)
+        {
+            if (effectMesh)
+                renderer->pMeshData = effectMesh;
+
+            renderer->pMaterial = effectMaterial;
+        }
+
+        pOwner->scale = { explosionRadius * 0.35f, explosionRadius * 0.35f, 1.0f };
+        SetVisualAlpha(0.9f);
+    }
+
     void UpdateFuseBlink()
     {
-        if (!material) return;
-
         float elapsed = fuseTime - fuseTimer;
         float progress = elapsed / fuseTime;
 
@@ -105,23 +157,22 @@ private:
         int blinkStep = (int)(elapsed / blinkInterval);
         float alpha = (blinkStep % 2 == 0) ? 1.0f : 0.25f;
 
-        material->SetColor(XMFLOAT4(1.0f, 0.8f, 0.1f, alpha));
+        SetVisualAlpha(alpha);
     }
 
     void UpdateExplosionEffect()
     {
-        if (!material) return;
-
         float progress = 1.0f - explosionTimer / explosionDuration;
 
         if (progress < 0.0f) progress = 0.0f;
         if (progress > 1.0f) progress = 1.0f;
 
-        float scale = startScale + explosionRadius * progress;
+        float smokeStartScale = explosionRadius * 0.35f;
+        float scale = smokeStartScale + (explosionRadius - smokeStartScale) * progress;
         pOwner->scale = { scale, scale, 1.0f };
 
-        float alpha = 1.0f - progress;
-        material->SetColor(XMFLOAT4(1.0f, 0.25f, 0.05f, alpha));
+        float alpha = 0.9f * (1.0f - progress);
+        SetVisualAlpha(alpha);
     }
 
     void ApplyDamage()
