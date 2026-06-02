@@ -151,6 +151,7 @@
     <ClInclude Include="PlayerBulletSpawner.hpp" />
     <ClInclude Include="PlayerControl.hpp" />
     <ClInclude Include="PlayerHealth.hpp" />
+    <ClInclude Include="ScreenShake.hpp" />
     <ClInclude Include="ResultUIUpdater.hpp" />
     <ClInclude Include="StatsUIUpdater.hpp" />
     <ClInclude Include="TextUI.hpp" />

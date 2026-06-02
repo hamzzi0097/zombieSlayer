@@ -19,6 +19,7 @@
 #include "ResultUIUpdater.hpp"
 #include "BlinkUIUpdater.hpp"
 #include "Background.hpp"
+#include "ScreenShake.hpp"
 
 // 원 그리기
 std::vector<Vertex> CreateCircleVertices(float radius, int segments, XMFLOAT4 color)
@@ -70,6 +71,10 @@ public:
     GameObject* player          = nullptr;
     GameObject* monsterSpawner  = nullptr;
 
+    // screen 흔들리는 역할
+    GameObject* screenShakeObject = nullptr;
+
+    // StatsUI 데이터 소스 — 주소를 StatsUI에 넘겨 매 프레임 읽게 한다.
     // 통계 데이터 소스 — 주소를 StatsUIUpdater/ResultUIUpdater에 넘겨 매 프레임 읽게 한다.
     // GameLoop 멤버라 주소가 안정적이며, OnEnter(Playing)에서 0으로 리셋한다.
     int   m_killCount = 0;     // 현재 라운드 누적 킬
@@ -94,6 +99,7 @@ public:
         delete playerBulletMaterial; playerBulletMaterial = nullptr;
         delete monsterMaterial; monsterMaterial = nullptr;
         delete bombMesh;       bombMesh       = nullptr;
+        delete screenShakeObject; screenShakeObject = nullptr;
         GraphicsContext::Destroy();
         shader.Release();
         textureShader.Release();
@@ -204,6 +210,10 @@ public:
         // 배경(텍스처 매핑 테스트): 장판 타일 이미지를 화면 전체에 깔기
         background = new GameObject(0.0f, 0.0f, 0.0f);
         background->AddComponent(new Background(textureShader, L"bg.png"));
+
+        // 스크린 흔들리는 오브젝트
+        screenShakeObject = new GameObject(0.0f, 0.0f, 0.0f);
+        screenShakeObject->AddComponent(new ScreenShake());
 
         return true;
     }
@@ -423,6 +433,10 @@ private:
 
                 continue;
             }
+
+            if (screenShakeObject)
+                screenShakeObject->Update(dt);
+
             break;
         case State::GameOver:
             gameOverCanvas->Update(dt);
@@ -451,7 +465,8 @@ private:
             float col[] = { 0.1f, 0.2f, 0.3f, 1.0f };
             gfx->ImmediateContext->ClearRenderTargetView(gfx->RTV, col);
 
-            D3D11_VIEWPORT vp = { 0, 0, (float)win.Width, (float)win.Height, 0, 1 };
+            XMFLOAT2 screenShakeOffset = ScreenShake::GetPixelOffset((float)win.Width, (float)win.Height);
+            D3D11_VIEWPORT vp = { screenShakeOffset.x, screenShakeOffset.y, (float)win.Width, (float)win.Height, 0, 1 };
             gfx->ImmediateContext->RSSetViewports(1, &vp);
             gfx->ImmediateContext->OMSetRenderTargets(1, &gfx->RTV, nullptr);
             gfx->ImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);

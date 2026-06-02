@@ -4,6 +4,7 @@
 #include "Material.hpp"
 #include "MeleeMonsterControl.hpp"
 #include "RangedMonsterControl.hpp"
+#include "ScreenShake.hpp"
 
 enum class BombState
 {
@@ -65,6 +66,7 @@ public:
             if (fuseTimer <= 0.0f)
             {
                 ApplyDamage();
+                ScreenShake::Trigger(0.25f, 0.04f);
                 state = BombState::Exploding;
             }
         }

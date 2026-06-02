@@ -1,5 +1,6 @@
 #pragma comment(linker, "/entry:WinMainCRTStartup /subsystem:console")
 #include "GameLoop.hpp"
+#include "ScreenShake.hpp"
 #include "MeshRenderer.hpp"
 #include "PlayerControl.hpp"
 #include "PlayerBullet.hpp"
@@ -12,6 +13,7 @@
 
 // GraphicsContext 싱글톤 인스턴스 정의
 GraphicsContext* GraphicsContext::s_instance = nullptr;
+ScreenShake* ScreenShake::s_screenShake = nullptr;
 
 // -----------------------------------------------------------------------------
 // [윈도우 메시지 처리기]
