@@ -4,6 +4,7 @@
 #include "Material.hpp"
 #include "MeleeMonsterControl.hpp"
 #include "RangedMonsterControl.hpp"
+#include "ScreenShake.hpp"
 
 enum class BombState
 {
@@ -16,7 +17,7 @@ class Bomb : public Component
 {
 private:
     std::vector<GameObject*>* world;
-    ColorMaterial* material;
+    ColorMaterial* material = nullptr;
 
     BombState state = BombState::Fuse;
 
@@ -31,16 +32,21 @@ private:
     int damage = 5;
 
 public:
-    Bomb(std::vector<GameObject*>* world, ColorMaterial* material)
+    Bomb(std::vector<GameObject*>* world, ShaderSet shader)
     {
         this->world = world;
-        this->material = material;
+        material = new ColorMaterial(shader, XMFLOAT4(1.0f, 0.8f, 0.1f, 1.0f));
     }
 
     ~Bomb()
     {
         delete material;
         material = nullptr;
+    }
+
+    ColorMaterial* GetMaterial() const
+    {
+        return material;
     }
 
     void Start() override
@@ -60,6 +66,7 @@ public:
             if (fuseTimer <= 0.0f)
             {
                 ApplyDamage();
+                ScreenShake::Trigger(0.25f, 0.04f);
                 state = BombState::Exploding;
             }
         }
