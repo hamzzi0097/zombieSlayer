@@ -130,6 +130,7 @@
     <ClCompile Include="RangedMonsterControl.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="BlinkUIUpdater.hpp" />
     <ClInclude Include="Bomb.hpp" />
     <ClInclude Include="BombCooldownUI.hpp" />
     <ClInclude Include="BombSpawner.hpp" />
@@ -150,13 +151,22 @@
     <ClInclude Include="PlayerBulletSpawner.hpp" />
     <ClInclude Include="PlayerControl.hpp" />
     <ClInclude Include="PlayerHealth.hpp" />
-    <ClInclude Include="StatsUI.hpp" />
+    <ClInclude Include="ResultUIUpdater.hpp" />
+    <ClInclude Include="StatsUIUpdater.hpp" />
     <ClInclude Include="TextUI.hpp" />
     <ClInclude Include="Timer.hpp" />
     <ClInclude Include="WindowContext.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="effect.hlsl" />
+    <None Include="bg.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="effect.hlsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="texture.hlsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <None Include="uiGradient.hlsl">
