@@ -130,6 +130,7 @@
     <ClCompile Include="RangedMonsterControl.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AmmoUI.hpp" />
     <ClInclude Include="BlinkUIUpdater.hpp" />
     <ClInclude Include="Bomb.hpp" />
     <ClInclude Include="BombCooldownUI.hpp" />

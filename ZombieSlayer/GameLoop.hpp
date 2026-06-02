@@ -18,6 +18,7 @@
 #include "StatsUIUpdater.hpp"
 #include "ResultUIUpdater.hpp"
 #include "BlinkUIUpdater.hpp"
+#include "AmmoUI.hpp"
 #include "Background.hpp"
 #include "ScreenShake.hpp"
 #include "DeadMonsterControl.hpp"
@@ -218,6 +219,7 @@ public:
         playingCanvas->AddComponent(timeLabel);
         playingCanvas->AddComponent(killLabel);
         playingCanvas->AddComponent(new StatsUIUpdater(&m_killCount, &m_playTime, timeLabel, killLabel));
+        playingCanvas->AddComponent(new AmmoUI(shader, &player));
 
         // GameOver 캔버스: player==nullptr이라 빈 하트로 표시됨.
         // m_killCount/m_playTime은 다음 라운드 진입 전까지 최종값 유지 → 결과 표시에 사용.

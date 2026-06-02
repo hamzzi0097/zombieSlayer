@@ -50,13 +50,13 @@ public:
         currentLives -= 1;
         if (onDamaged) onDamaged();
 
-        LOG_INFO("Player damaged. Lives: %d / %d", currentLives, maxLives);
+        //LOG_INFO("Player damaged. Lives: %d / %d", currentLives, maxLives);
 
         if (currentLives <= 0)
         {
             currentLives = 0;
             pOwner->isObjDead = true;
-            LOG_INFO("Player dead.");
+            //LOG_INFO("Player dead.");
             return;
         }
 

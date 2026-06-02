@@ -70,13 +70,13 @@ public:
             {
                 SpawnBullet();
                 currentAmmo--;
-                LOG_INFO("Ammo: %d / %d", currentAmmo, maxAmmo);
+                //LOG_INFO("Ammo: %d / %d", currentAmmo, maxAmmo);
 
                 if (currentAmmo == 0)
                 {
                     isReloading = true;
                     reloadTimer = reloadTime;
-                    LOG_INFO("Reloading... Ammo: %d / %d", currentAmmo, maxAmmo);
+                    //LOG_INFO("Reloading... Ammo: %d / %d", currentAmmo, maxAmmo);
                 }
             }
         }
@@ -89,7 +89,7 @@ public:
             {
                 isReloading = true;
                 reloadTimer = reloadTime;
-                LOG_INFO("Reloading... Ammo: %d / %d", currentAmmo, maxAmmo);
+                //LOG_INFO("Reloading... Ammo: %d / %d", currentAmmo, maxAmmo);
             }
         }
         
@@ -106,13 +106,20 @@ public:
                 currentAmmo = maxAmmo;
                 isReloading = false;
                 reloadTimer = 0.0f;
-                LOG_INFO("Reload complete. Ammo: %d / %d", currentAmmo, maxAmmo);
+                //LOG_INFO("Reload complete. Ammo: %d / %d", currentAmmo, maxAmmo);
             }
         }
     }
 
-    void Render() override
-    {
+    void Render() override {}
+
+    int   GetCurrentAmmo()    const { return currentAmmo; }
+    int   GetMaxAmmo()        const { return maxAmmo; }
+    bool  IsReloading()       const { return isReloading; }
+    // 0.0 = 재장전 시작, 1.0 = 완료(또는 재장전 중 아님)
+    float GetReloadProgress() const {
+        if (!isReloading || reloadTime <= 0.0f) return 1.0f;
+        return 1.0f - (reloadTimer / reloadTime);
     }
 
 private:
