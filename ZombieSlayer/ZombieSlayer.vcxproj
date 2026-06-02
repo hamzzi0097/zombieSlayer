@@ -135,6 +135,7 @@
     <ClInclude Include="BombCooldownUI.hpp" />
     <ClInclude Include="BombSpawner.hpp" />
     <ClInclude Include="Collider.hpp" />
+    <ClInclude Include="DeadMonsterControl.hpp" />
     <ClInclude Include="HeartUI.hpp" />
     <ClInclude Include="HitEffect.hpp" />
     <ClInclude Include="MonsterBullet.hpp" />

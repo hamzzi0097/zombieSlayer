@@ -6,14 +6,14 @@
 
 enum class  MeleeState
 {
-  TRACE,
-  DEAD,
-  ATTACK
+    TRACE,
+    DEAD,
+    ATTACK
 };
 
 class MeleeMonsterControl : public Component {
 private:
-  MeleeState meleeState;
+    MeleeState meleeState;
     XMFLOAT2 moveDir;
     GameObject* player;
     float moveSpeed;
@@ -48,7 +48,10 @@ public:
     }
 
     void Update(float dt) override {
-              moveDir.x = player->pos.x - this->pOwner->pos.x;
+        if (hp <= 0) {
+            ChangeState(MeleeState::DEAD);
+        }
+        moveDir.x = player->pos.x - this->pOwner->pos.x;
         moveDir.y = player->pos.y - this->pOwner->pos.y;
         float len = sqrtf(moveDir.x * moveDir.x + moveDir.y * moveDir.y);
 
@@ -56,6 +59,9 @@ public:
         {
             moveDir.x /= len;
             moveDir.y /= len;
+
+            float angle = std::atan2(moveDir.y, moveDir.x);
+            this->pOwner->rot.z = angle - (3.141592f / 2.0f);
         }
         switch (meleeState)
         {
@@ -65,6 +71,8 @@ public:
 
             this->pOwner->pos.x += moveDir.x * moveSpeed * dt;
             this->pOwner->pos.y += moveDir.y * moveSpeed * dt;
+
+
             break;
         case MeleeState::DEAD:
             pOwner->isObjDead = true;
@@ -90,12 +98,11 @@ public:
         meleeState = nextState;
         LOG_DEBUG("Next State : %d", nextState);
     }
+
     void getDamaged(int damage) {
         hp -= damage;
-        if (hp <= 0) {
-            ChangeState(MeleeState::DEAD);
-        }
     }
+
     void OnCollision(GameObject* obj) override
     {
         Collider* curObject = obj->GetComponent<Collider>();
@@ -109,6 +116,7 @@ public:
             }
 
             ChangeState(MeleeState::ATTACK);
+
         }
     }
 };

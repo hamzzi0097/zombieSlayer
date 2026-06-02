@@ -20,6 +20,7 @@
 #include "BlinkUIUpdater.hpp"
 #include "Background.hpp"
 #include "ScreenShake.hpp"
+#include "DeadMonsterControl.hpp"
 
 // 원 그리기
 std::vector<Vertex> CreateCircleVertices(float radius, int segments, XMFLOAT4 color)
@@ -147,11 +148,8 @@ public:
         bombMesh = new Mesh();
         bombMesh->Create(bombVertices);
 
-        std::vector<Vertex> monsterVertices =
-            CreateCircleVertices(1.0f, 256, XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
-
         monsterMesh = new Mesh();
-        monsterMesh->Create(monsterVertices);
+        monsterMesh->Create(CreateTexturedQuad(1.0f, 1.0f));
 
         playerMaterial = new ColorMaterial(shader, XMFLOAT4(0.2f, 0.8f, 1.0f, 1.0f));
         playerBulletMaterial = new ColorMaterial(shader, XMFLOAT4(1.0f, 0.9f, 0.2f, 1.0f));
@@ -312,7 +310,7 @@ private:
 
             // 몬스터 스포너 오브젝트 생성
             monsterSpawner = new GameObject(100, 100, 100);
-            monsterSpawner->AddComponent(new MonsterSpawner(&pendingObjects, player, monsterMesh, monsterMaterial));
+            monsterSpawner->AddComponent(new MonsterSpawner(&pendingObjects, player, textureShader,monsterMesh));
 
             world.push_back(player);
             world.push_back(monsterSpawner);
@@ -424,6 +422,21 @@ private:
                     if ((*obj)->GetComponent<MeleeMonsterControl>() ||
                         (*obj)->GetComponent<RangedMonsterControl>()) {
                         m_killCount++;
+                        MonsterSpawner* curMonsterSpawner = monsterSpawner->GetComponent<MonsterSpawner>();
+                        curMonsterSpawner->setSpawnedCount(curMonsterSpawner->getSpawnedCount() - 1); // 몬스터 죽어서 스폰된 몬스터 개수 감소
+                        GameObject* deadMonster = new GameObject((*obj)->pos.x, (*obj)->pos.y, (*obj)->pos.z);
+                        TextureMaterial* curMonsterMat;
+                        if ((*obj)->GetComponent<MeleeMonsterControl>()) {
+                            curMonsterMat = curMonsterSpawner->deadMonsterMesh(0);
+                        }
+                        else {
+                            curMonsterMat = curMonsterSpawner->deadMonsterMesh(1);
+                        }
+                        deadMonster->AddComponent(new DeadMonsterControl(player, 0.5f));
+                        deadMonster->AddComponent(new MeshRenderer(monsterMesh, curMonsterMat));
+                        deadMonster->scale = { 0.1f, 0.1f, 1.0f };
+
+                        pendingObjects.push_back(deadMonster);
                     }
                     delete* obj;
                     obj = world.erase(obj);

@@ -36,7 +36,7 @@ public:
 
         if (attackCooldown <= 0.0f) {
             RangedMonsterControl* rangedMonster = this->pOwner->GetComponent<RangedMonsterControl>();
-            if (rangedMonster && rangedMonster->getState() == RangedState::ATTACK) {
+            if (rangedMonster && rangedMonster->getState() == RangedState::RANGEDATTACK) {
                 SpawnBullet();
                 attackCooldown = ATTACK_INTERVAL;
             }
@@ -52,7 +52,7 @@ public:
 
         GameObject* bullet = new GameObject(pOwner->pos.x, pOwner->pos.y, pOwner->pos.z);
 
-        bullet->scale = { 0.01f, 0.01f, 1.0f };
+        bullet->scale = { 0.03f, 0.03f, 1.0f };
         bullet->AddComponent(new MeshRenderer(bulletMesh, bulletMaterial));
         bullet->AddComponent(new MonsterBullet(player, 0.5f));
         bullet->AddComponent(new CircleCollider(1.0f, CollisionLayer::MonsterBullet));

@@ -17,18 +17,27 @@ private:
     std::uniform_int_distribution<int> distrib;
     GameObject* player;
     Mesh* monsterMesh;
-    Material* monsterMaterial;
     std::vector<GameObject*>* pendingObjects;
     int maxMonsters;
     int spawnedCount;
     float timer;
     float spawnInterval;
+    Texture         mosquitoTex;
+    Texture         stinkBugTex;
+    Texture         bulletTex;
+    Texture         deadMosquitoTex;
+    Texture         deadStinkBugTex;
+    TextureMaterial* mosquitoMat = nullptr;
+    TextureMaterial* stinkBugMat = nullptr;
+    TextureMaterial* bulletMat = nullptr;
+    TextureMaterial* deadMosquitoMat = nullptr;
+    TextureMaterial* deadStinkBugMat = nullptr;
 public:
 
 
-    MonsterSpawner(std::vector<GameObject*>* pendingObjects, GameObject* player, Mesh* monsterMesh, Material* monsterMaterial) :
-        left({ -1.4f,0.0f }),
-        right({ 1.4f, 0.0f }),
+    MonsterSpawner(std::vector<GameObject*>* pendingObjects, GameObject* player, ShaderSet textureShader,Mesh* monsterMesh) :
+        left({ -2.0f,0.0f }),
+        right({ 2.0f, 0.0f }),
         up({ 0.0f,1.2f }),
         down({ 0.0f,-1.2f }),
         gen(rd()),
@@ -36,16 +45,41 @@ public:
         player(player),
         pendingObjects(pendingObjects),
         monsterMesh(monsterMesh),
-        monsterMaterial(monsterMaterial),
         maxMonsters(50),
         spawnedCount(0),
         timer(0.0f),
         spawnInterval(2.0f)
     {
+        ID3D11Device* dev = GraphicsContext::Get()->Device;
+
+        mosquitoTex.Load(dev, L"Mosquito.png");
+        mosquitoTex.CreateSampler(dev);
+        mosquitoMat = new TextureMaterial(textureShader, &mosquitoTex);
+
+        stinkBugTex.Load(dev, L"StinkBug.png");
+        stinkBugTex.CreateSampler(dev);
+        stinkBugMat = new TextureMaterial(textureShader, &stinkBugTex);
+
+        bulletTex.Load(dev, L"StinkBugBullet.png");
+        bulletTex.CreateSampler(dev);
+        bulletMat = new TextureMaterial(textureShader, &bulletTex);
+
+        deadMosquitoTex.Load(dev, L"DeadMosquito.png");
+        deadMosquitoTex.CreateSampler(dev);
+        deadMosquitoMat = new TextureMaterial(textureShader, &deadMosquitoTex);
+
+        deadStinkBugTex.Load(dev, L"DeadStinkBug.png");
+        deadStinkBugTex.CreateSampler(dev);
+        deadStinkBugMat = new TextureMaterial(textureShader, &deadStinkBugTex);
     }
 
     ~MonsterSpawner() {
-        monsterMaterial = nullptr;
+        delete mosquitoMat;
+        delete stinkBugMat;
+        delete bulletMat;
+        mosquitoMat = nullptr;
+        stinkBugMat = nullptr;
+        bulletMat = nullptr;
     }
     void Start()override {
     }
@@ -106,21 +140,39 @@ public:
         if (monster == 0) {
             GameObject* monster = new GameObject(curPos.x, curPos.y, 0.0f);
             monster->AddComponent(new MeleeMonsterControl(player, 0.5f));
-            monster->AddComponent(new MeshRenderer(monsterMesh, monsterMaterial));
+            monster->AddComponent(new MeshRenderer(monsterMesh, mosquitoMat));
             monster->AddComponent(new CircleCollider(1.0f, CollisionLayer::MeleeMonster));
-            monster->scale = { 0.05f,0.05f,1.0f };
+            monster->scale = { 0.1f,0.1f,1.0f };
 
             pendingObjects->push_back(monster);
         }
         else if (monster == 1) {
             GameObject* monster = new GameObject(curPos.x, curPos.y, 0.0f);
             monster->AddComponent(new RangedMonsterControl(player, 0.5f));
-            monster->AddComponent(new MeshRenderer(monsterMesh, monsterMaterial));
+            monster->AddComponent(new MeshRenderer(monsterMesh, stinkBugMat));
             monster->AddComponent(new CircleCollider(1.0f, CollisionLayer::RangedMonster));
-            monster->scale = { 0.05f,0.05f,1.0f };
-            monster->AddComponent(new MonsterBulletSpawner(pendingObjects, monsterMesh, monsterMaterial, player));
+            monster->scale = { 0.1f,0.1f,1.0f };
+            monster->AddComponent(new MonsterBulletSpawner(pendingObjects, monsterMesh, bulletMat, player));
             pendingObjects->push_back(monster);
         }
         // 몬스터 생성되는 위치만 네 방향으로 설정, 여기서 하나 불러서 사용하면 될 듯 함
+    }
+
+    int getSpawnedCount() const{
+        return spawnedCount;
+    }
+    void setSpawnedCount(int num) {
+        spawnedCount = num;
+    }
+
+    TextureMaterial* deadMonsterMesh(int n) {
+        switch (n) {
+        case 0:
+
+            return deadMosquitoMat;
+        case 1:
+
+            return deadStinkBugMat;
+        }
     }
 };
