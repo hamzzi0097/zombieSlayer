@@ -18,6 +18,7 @@
 #include "TextUI.hpp"
 #include "ResultUI.hpp"
 #include "Background.hpp"
+#include "BlinkText.hpp"
 
 // 원 그리기
 std::vector<Vertex> CreateCircleVertices(float radius, int segments, XMFLOAT4 color)
@@ -100,7 +101,7 @@ public:
     /// 클래스 초기화 함수, main문 시작 시 1회만 호출
     /// </summary>
     bool Initialize(HINSTANCE hInst, LRESULT(CALLBACK* wndProc)(HWND, UINT, WPARAM, LPARAM),
-                    int w = 800, int h = 600) {
+                    int w = 1920, int h = 1080) {
         // WIC(텍스처 로딩)는 COM 기반이라 스레드에서 1회 초기화 필요
         CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
 
@@ -160,8 +161,16 @@ public:
         gameOverUI->AddComponent(new TextUI(shader, "SPACE:RESTART  1:LOBBY",
             0.0f, -0.55f, 0.06f, XMFLOAT4(0.6f, 0.6f, 0.6f, 1.0f)));    // 안내, 회색
 
-        // Lobby 캔버스: 타이틀 UI는 추후 추가
+        // Lobby 캔버스: 타이틀 + 태그라인 + 깜빡이는 시작 안내 + 조작 안내
         lobbyUI = new GameObject(0.0f, 0.0f, 0.0f);
+        lobbyUI->AddComponent(new TextUI(shader, "SPIT MASTER",
+            0.0f, 0.45f, 0.20f, XMFLOAT4(0.30f, 0.90f, 1.00f, 1.0f)));     // 타이틀, 시안
+        lobbyUI->AddComponent(new TextUI(shader, "SPIT TO SURVIVE",
+            0.0f, 0.18f, 0.06f, XMFLOAT4(0.80f, 0.80f, 0.80f, 1.0f)));     // 태그라인
+        lobbyUI->AddComponent(new BlinkText(shader, "PRESS SPACE",
+            0.0f, -0.15f, 0.09f, XMFLOAT4(1.00f, 0.90f, 0.20f, 1.0f)));    // 깜빡이는 시작 안내
+        lobbyUI->AddComponent(new TextUI(shader, "SPACE:START  ESC:QUIT",
+            0.0f, -0.72f, 0.05f, XMFLOAT4(0.55f, 0.55f, 0.55f, 1.0f)));    // 조작 안내, 회색
 
         // 배경(텍스처 매핑 테스트): 장판 타일 이미지를 화면 전체에 깔기
         background = new GameObject(0.0f, 0.0f, 0.0f);
@@ -399,9 +408,19 @@ private:
         auto* gfx = GraphicsContext::Get();
         switch (m_state) {
         case State::Lobby:
+        {
+            float col[] = { 0.06f, 0.07f, 0.10f, 1.0f };   // 어두운 배경
+            gfx->ImmediateContext->ClearRenderTargetView(gfx->RTV, col);
 
+            D3D11_VIEWPORT vp = { 0, 0, (float)win.Width, (float)win.Height, 0, 1 };
+            gfx->ImmediateContext->RSSetViewports(1, &vp);
+            gfx->ImmediateContext->OMSetRenderTargets(1, &gfx->RTV, nullptr);
+            gfx->ImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+            lobbyUI->Render();
             break;
-        case State::Playing: 
+        }
+        case State::Playing:
         {
             float col[] = { 0.1f, 0.2f, 0.3f, 1.0f };
             gfx->ImmediateContext->ClearRenderTargetView(gfx->RTV, col);
