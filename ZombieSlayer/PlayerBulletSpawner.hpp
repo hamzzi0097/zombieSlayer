@@ -3,6 +3,7 @@
 #include "MeshRenderer.hpp"
 #include "PlayerBullet.hpp"
 #include "Collider.hpp"
+#include "Logger.hpp"
 
 // 플레이어의 탄환 오브젝트 생성 컴포넌트
 class PlayerBulletSpawner : public Component
@@ -14,6 +15,13 @@ class PlayerBulletSpawner : public Component
     HWND hWnd;
     int* windowWidth;
     int* windowHeight;
+
+    int maxAmmo = 10;
+    int currentAmmo = 10;
+
+    bool isReloading = false;
+    float reloadTime = 1.5f;
+    float reloadTimer = 0.0f;
 
     bool wasLeftMouseDown;
 
@@ -33,6 +41,12 @@ public:
 
     void Start() override
     {
+        maxAmmo = 10;
+        currentAmmo = maxAmmo;
+
+        isReloading = false;
+        reloadTime = 1.5f;
+        reloadTimer = 0.0f;
     }
 
     void Input() override
@@ -43,14 +57,49 @@ public:
         // 현재 프레임 처음 눌린 순간만 탄환 생성
         if (isLeftMouseDown && !wasLeftMouseDown)
         {
-            SpawnBullet();
+            if (!isReloading && currentAmmo > 0)
+            {
+                SpawnBullet();
+                currentAmmo--;
+                LOG_INFO("Ammo: %d / %d", currentAmmo, maxAmmo);
+
+                if (currentAmmo == 0)
+                {
+                    isReloading = true;
+                    reloadTimer = reloadTime;
+                    LOG_INFO("Reloading... Ammo: %d / %d", currentAmmo, maxAmmo);
+                }
+            }
         }
 
         wasLeftMouseDown = isLeftMouseDown;
+
+        if ((GetAsyncKeyState('R') & 0x0001) != 0)
+        {
+            if (!isReloading && currentAmmo < maxAmmo)
+            {
+                isReloading = true;
+                reloadTimer = reloadTime;
+                LOG_INFO("Reloading... Ammo: %d / %d", currentAmmo, maxAmmo);
+            }
+        }
+        
     }
 
     void Update(float dt) override
     {
+        if (isReloading)
+        {
+            reloadTimer -= dt;
+
+            if (reloadTimer <= 0.0f)
+            {
+                currentAmmo = maxAmmo;
+                isReloading = false;
+                reloadTimer = 0.0f;
+                LOG_INFO("Reload complete. Ammo: %d / %d", currentAmmo, maxAmmo);
+            }
+        }
     }
 
     void Render() override

@@ -66,6 +66,7 @@ public:
             pOwner->pos.x += (moveDir.x/len) * moveSpeed * dt;
             pOwner->pos.y += (moveDir.y/len) * moveSpeed * dt;
         }
+        ClampPlayerInsideScreen();
 
         // 플레이어 시점 방향
         XMFLOAT2 playerViewPoint = { mouseWorldPos.x - pOwner->pos.x, mouseWorldPos.y - pOwner->pos.y };
@@ -97,5 +98,31 @@ public:
         else mouseWorldPos.y /= aspect;
         
         // printf("mouseWorld: %.4f, %.4f\n", mouseWorldPos.x, mouseWorldPos.y);
+    }
+
+    float Clamp(float ScreenSize, float minScreenSize, float maxScreenSize)
+    {
+        if (ScreenSize < minScreenSize) return minScreenSize;
+        if (ScreenSize > maxScreenSize) return maxScreenSize;
+        return ScreenSize;
+    }
+
+    void ClampPlayerInsideScreen()
+    {
+        float aspect = (float)(*windowWidth) / (float)(*windowHeight);
+
+        float halfWidth = 1.0f;
+        float halfHeight = 1.0f;
+
+        if (aspect >= 1.0f)
+            halfWidth = aspect;
+        else
+            halfHeight = 1.0f / aspect;
+
+        float marginX = pOwner->scale.x;
+        float marginY = pOwner->scale.y;
+
+        pOwner->pos.x = Clamp(pOwner->pos.x, -halfWidth + marginX, halfWidth - marginX);
+        pOwner->pos.y = Clamp(pOwner->pos.y, -halfHeight + marginY, halfHeight - marginY);
     }
 };
