@@ -116,7 +116,7 @@ private:
     static constexpr int   GLYPH_H = 7;   // 글자 세로 픽셀
     static constexpr float ADVANCE = 6.0f; // 다음 글자까지 가로 이동(=5 + 1칸 간격)
 
-    // 직사각형 → 삼각형 2개. 시계방향(CW) 와인딩(StatsUI와 동일 규칙).
+    // 직사각형 → 삼각형 2개. 시계방향(CW) 와인딩(프로젝트 공통 백페이스 컬링 규칙).
     static void PushRect(std::vector<Vertex>& v, float x0, float y0, float x1, float y1) {
         XMFLOAT4 w = { 1,1,1,1 };
         v.push_back({ {x0,y0,0}, w }); v.push_back({ {x1,y1,0}, w }); v.push_back({ {x1,y0,0}, w });

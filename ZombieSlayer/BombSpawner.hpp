@@ -60,17 +60,16 @@ public:
 private:
     void SpawnBomb()
     {
-        ColorMaterial* bombMaterial = new ColorMaterial(shader, XMFLOAT4(1.0f, 0.8f, 0.1f, 1.0f));
-
         GameObject* bomb = new GameObject(
             pOwner->pos.x,
             pOwner->pos.y,
             pOwner->pos.z
         );
 
+        Bomb* bombComponent = new Bomb(world, shader);
         bomb->scale = { 0.06f, 0.06f, 1.0f };
-        bomb->AddComponent(new MeshRenderer(bombMesh, bombMaterial));
-        bomb->AddComponent(new Bomb(world, bombMaterial));
+        bomb->AddComponent(new MeshRenderer(bombMesh, bombComponent->GetMaterial()));
+        bomb->AddComponent(bombComponent);
 
         pendingObjects->push_back(bomb);
 
