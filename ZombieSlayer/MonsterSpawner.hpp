@@ -16,9 +16,8 @@ private:
     std::mt19937 gen;
     std::uniform_int_distribution<int> distrib;
     GameObject* player;
-    std::vector<Vertex> monsterVertices;
-    Mesh monsterMesh;
-    ColorMaterial* monsterMaterial;
+    Mesh* monsterMesh;
+    Material* monsterMaterial;
     std::vector<GameObject*>* pendingObjects;
     int maxMonsters;
     int spawnedCount;
@@ -27,7 +26,7 @@ private:
 public:
 
 
-    MonsterSpawner(std::vector<GameObject*>* pendingObjects, GameObject* player, ShaderSet starShaders, std::vector<Vertex> monsterVertices) :
+    MonsterSpawner(std::vector<GameObject*>* pendingObjects, GameObject* player, Mesh* monsterMesh, Material* monsterMaterial) :
         left({ -1.4f,0.0f }),
         right({ 1.4f, 0.0f }),
         up({ 0.0f,1.2f }),
@@ -36,21 +35,16 @@ public:
         distrib(1, 200),
         player(player),
         pendingObjects(pendingObjects),
-        monsterVertices(monsterVertices), 
+        monsterMesh(monsterMesh),
+        monsterMaterial(monsterMaterial),
         maxMonsters(50),
         spawnedCount(0),
         timer(0.0f),
         spawnInterval(2.0f)
     {
-        monsterMesh.Create(monsterVertices);
-        monsterMaterial = new ColorMaterial(
-            starShaders,
-            XMFLOAT4(0.8f, 0.2f, 0.2f, 1.0f)
-        );
     }
 
     ~MonsterSpawner() {
-        delete monsterMaterial;
         monsterMaterial = nullptr;
     }
     void Start()override {
@@ -112,7 +106,7 @@ public:
         if (monster == 0) {
             GameObject* monster = new GameObject(curPos.x, curPos.y, 0.0f);
             monster->AddComponent(new MeleeMonsterControl(player, 0.5f));
-            monster->AddComponent(new MeshRenderer(&monsterMesh, &*monsterMaterial));
+            monster->AddComponent(new MeshRenderer(monsterMesh, monsterMaterial));
             monster->AddComponent(new CircleCollider(1.0f, CollisionLayer::MeleeMonster));
             monster->scale = { 0.05f,0.05f,1.0f };
 
@@ -121,10 +115,10 @@ public:
         else if (monster == 1) {
             GameObject* monster = new GameObject(curPos.x, curPos.y, 0.0f);
             monster->AddComponent(new RangedMonsterControl(player, 0.5f));
-            monster->AddComponent(new MeshRenderer(&monsterMesh, &*monsterMaterial));
+            monster->AddComponent(new MeshRenderer(monsterMesh, monsterMaterial));
             monster->AddComponent(new CircleCollider(1.0f, CollisionLayer::RangedMonster));
             monster->scale = { 0.05f,0.05f,1.0f };
-            monster->AddComponent(new MonsterBulletSpawner(pendingObjects, &monsterMesh, &*monsterMaterial, player));
+            monster->AddComponent(new MonsterBulletSpawner(pendingObjects, monsterMesh, monsterMaterial, player));
             pendingObjects->push_back(monster);
         }
         // 몬스터 생성되는 위치만 네 방향으로 설정, 여기서 하나 불러서 사용하면 될 듯 함
