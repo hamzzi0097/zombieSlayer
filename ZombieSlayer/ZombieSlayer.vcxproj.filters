@@ -95,6 +95,15 @@
     <ClInclude Include="BombSpawner.hpp">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="StatsUI.hpp">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="TextUI.hpp">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="ScreenShake.hpp">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="effect.hlsl">
