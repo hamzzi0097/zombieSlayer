@@ -15,11 +15,21 @@ private:
     float invincibleDuration;
 
     ColorMaterial* playerMaterial = nullptr;
+    TextureMaterial* playerTextureMaterial = nullptr;
 
     XMFLOAT4 normalColor = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
     XMFLOAT4 blinkColor = XMFLOAT4(1.0f, 1.0f, 1.0f, 0.5f);
 
     int blinkCount = 3;
+
+    void SetVisualColor(const XMFLOAT4& color)
+    {
+        if (playerMaterial)
+            playerMaterial->SetColor(color);
+
+        if (playerTextureMaterial)
+            playerTextureMaterial->SetTint(color);
+    }
 
 public:
     std::function<void()> onDamaged;
@@ -75,10 +85,19 @@ public:
         if (renderer)
         {
             playerMaterial = dynamic_cast<ColorMaterial*>(renderer->GetMaterial());
+            playerTextureMaterial = dynamic_cast<TextureMaterial*>(renderer->GetMaterial());
 
             if (playerMaterial)
             {
                 normalColor = playerMaterial->color;
+            }
+            else if (playerTextureMaterial)
+            {
+                normalColor = playerTextureMaterial->tint;
+            }
+
+            if (playerMaterial || playerTextureMaterial)
+            {
                 blinkColor = normalColor;
                 blinkColor.w = 0.5f;
             }
@@ -95,7 +114,7 @@ public:
         {
             invincibleRemainTime -= dt;
 
-            if (playerMaterial)
+            if (playerMaterial || playerTextureMaterial)
             {
                 float elapsed = invincibleDuration - invincibleRemainTime;
 
@@ -103,17 +122,16 @@ public:
                 int blinkStep = (int)(elapsed / blinkInterval);
 
                 if (blinkStep % 2 == 0)
-                    playerMaterial->SetColor(blinkColor);
+                    SetVisualColor(blinkColor);
                 else
-                    playerMaterial->SetColor(normalColor);
+                    SetVisualColor(normalColor);
             }
 
             if (invincibleRemainTime <= 0.0f)
             {
                 invincibleRemainTime = 0.0f;
 
-                if (playerMaterial)
-                    playerMaterial->SetColor(normalColor);
+                SetVisualColor(normalColor);
             }
         }
     }

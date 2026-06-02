@@ -53,8 +53,14 @@ public:
 
     // 게임 내내 재사용하는 리소스 (Initialize에서 1회 생성)
     Mesh*          playerMesh     = nullptr;
+    Mesh*          playerSpriteMesh = nullptr;
     Mesh*          bombMesh       = nullptr;
     Mesh*          monsterMesh    = nullptr;
+    Mesh*          playerBulletSpriteMesh = nullptr;
+    Texture*       playerTexture  = nullptr;
+    Texture*       playerBulletTexture = nullptr;
+    TextureMaterial* playerTextureMaterial = nullptr;
+    TextureMaterial* playerBulletTextureMaterial = nullptr;
     ColorMaterial* playerMaterial = nullptr;
     ColorMaterial* playerBulletMaterial = nullptr;  // 탄환 전용 ColorMaterial
     ColorMaterial* monsterMaterial = nullptr;
@@ -94,7 +100,13 @@ public:
         delete lobbyCanvas;        lobbyCanvas        = nullptr;
         delete background;     background     = nullptr;
         delete playerMesh;     playerMesh     = nullptr;
+        delete playerSpriteMesh; playerSpriteMesh = nullptr;
+        delete playerBulletSpriteMesh; playerBulletSpriteMesh = nullptr;
         delete monsterMesh;    monsterMesh    = nullptr;
+        delete playerTextureMaterial; playerTextureMaterial = nullptr;
+        delete playerBulletTextureMaterial; playerBulletTextureMaterial = nullptr;
+        delete playerTexture;  playerTexture  = nullptr;
+        delete playerBulletTexture; playerBulletTexture = nullptr;
         delete playerMaterial; playerMaterial = nullptr;
         delete playerBulletMaterial; playerBulletMaterial = nullptr;
         delete monsterMaterial; monsterMaterial = nullptr;
@@ -141,6 +153,12 @@ public:
         playerMesh = new Mesh();
         playerMesh->Create(playerVertices);
 
+        playerSpriteMesh = new Mesh();
+        playerSpriteMesh->Create(CreateTexturedQuad(1.2f, 1.2f));
+
+        playerBulletSpriteMesh = new Mesh();
+        playerBulletSpriteMesh->Create(CreateTexturedQuad(1.0f, 170.0f / 177.0f));
+
         std::vector<Vertex> bombVertices =
             CreateCircleVertices(1.0f, 64, XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
 
@@ -154,7 +172,35 @@ public:
         monsterMesh->Create(monsterVertices);
 
         playerMaterial = new ColorMaterial(shader, XMFLOAT4(0.2f, 0.8f, 1.0f, 1.0f));
+
+        playerTexture = new Texture();
+        if (playerTexture->Load(GraphicsContext::Get()->Device, L"player.png"))
+        {
+            playerTexture->CreateSampler(GraphicsContext::Get()->Device);
+            playerTextureMaterial = new TextureMaterial(textureShader, playerTexture);
+        }
+        else
+        {
+            LOG_WARN("Failed to load player texture. Fallback to color mesh.");
+            delete playerTexture;
+            playerTexture = nullptr;
+        }
+
         playerBulletMaterial = new ColorMaterial(shader, XMFLOAT4(1.0f, 0.9f, 0.2f, 1.0f));
+
+        playerBulletTexture = new Texture();
+        if (playerBulletTexture->Load(GraphicsContext::Get()->Device, L"spit.png"))
+        {
+            playerBulletTexture->CreateSampler(GraphicsContext::Get()->Device);
+            playerBulletTextureMaterial = new TextureMaterial(textureShader, playerBulletTexture);
+        }
+        else
+        {
+            LOG_WARN("Failed to load player bullet texture. Fallback to color mesh.");
+            delete playerBulletTexture;
+            playerBulletTexture = nullptr;
+        }
+
         monsterMaterial = new ColorMaterial(shader, XMFLOAT4(0.8f, 0.2f, 0.2f, 1.0f));
 
         // ── UI 캔버스 1회 구성 ──────────────────────────────────────────────
@@ -299,16 +345,36 @@ private:
 
             // 플레이어 오브젝트 생성
             player = new GameObject(0.0f, 0.0f, 0.0f);
-            player->scale = { 0.08f, 0.08f, 1.0f };
-            player->AddComponent(new MeshRenderer(playerMesh, playerMaterial));
-            player->AddComponent(new PlayerController(win.hWnd, &win.Width, &win.Height));
+            bool usePlayerTexture = playerSpriteMesh && playerTextureMaterial;
+            float playerScale = usePlayerTexture ? 0.272f : 0.08f;
+            float playerColliderRadius = usePlayerTexture ? 0.39f : 1.0f;
+            float playerRotationOffset = usePlayerTexture ? -XM_PIDIV2 : 0.0f;
+            float playerScreenMargin = playerScale * playerColliderRadius;
+
+            player->scale = { playerScale, playerScale, 1.0f };
+
+            if (usePlayerTexture)
+                player->AddComponent(new MeshRenderer(playerSpriteMesh, playerTextureMaterial));
+            else
+                player->AddComponent(new MeshRenderer(playerMesh, playerMaterial));
+
+            player->AddComponent(new PlayerController(
+                win.hWnd, &win.Width, &win.Height,
+                playerRotationOffset, playerScreenMargin
+            ));
             player->AddComponent(new PlayerHealth(3, 1.5f));
+            bool usePlayerBulletTexture = playerBulletSpriteMesh && playerBulletTextureMaterial;
             player->AddComponent(new PlayerBulletSpawner(
-                &pendingObjects, playerMesh, playerBulletMaterial,
-                win.hWnd, &win.Width, &win.Height
+                &pendingObjects,
+                usePlayerBulletTexture ? playerBulletSpriteMesh : playerMesh,
+                usePlayerBulletTexture ? static_cast<Material*>(playerBulletTextureMaterial) : static_cast<Material*>(playerBulletMaterial),
+                win.hWnd, &win.Width, &win.Height,
+                usePlayerBulletTexture ? 0.0825f : 0.03f,
+                usePlayerBulletTexture ? 0.6f : 1.0f,
+                0.0f
             ));
             player->AddComponent(new BombSpawner(&world, &pendingObjects, bombMesh, shader));
-            player->AddComponent(new CircleCollider(1.0f, CollisionLayer::Player));
+            player->AddComponent(new CircleCollider(playerColliderRadius, CollisionLayer::Player));
 
             // 몬스터 스포너 오브젝트 생성
             monsterSpawner = new GameObject(100, 100, 100);

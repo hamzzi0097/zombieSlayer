@@ -16,6 +16,10 @@ class PlayerBulletSpawner : public Component
     int* windowWidth;
     int* windowHeight;
 
+    float bulletScale;
+    float bulletColliderRadius;
+    float bulletRotationOffset;
+
     int maxAmmo = 10;
     int currentAmmo = 10;
 
@@ -27,7 +31,9 @@ class PlayerBulletSpawner : public Component
 
 public:
     PlayerBulletSpawner(std::vector<GameObject*>* pendingObjects, Mesh* bulletMesh,
-        Material* bulletMaterial, HWND hWnd, int* width, int* height) : Component()
+        Material* bulletMaterial, HWND hWnd, int* width, int* height,
+        float bulletScale = 0.03f, float bulletColliderRadius = 1.0f,
+        float bulletRotationOffset = 0.0f) : Component()
     {
         this->pendingObjects = pendingObjects;
         this->bulletMesh = bulletMesh;
@@ -35,6 +41,9 @@ public:
         this->hWnd = hWnd;
         this->windowWidth = width;
         this->windowHeight = height;
+        this->bulletScale = bulletScale;
+        this->bulletColliderRadius = bulletColliderRadius;
+        this->bulletRotationOffset = bulletRotationOffset;
 
         wasLeftMouseDown = false;
     }
@@ -149,12 +158,13 @@ private:
                 pOwner->pos.z
             );
 
-            bullet->scale = { 0.03f, 0.03f, 1.0f };
+            bullet->scale = { bulletScale, bulletScale, 1.0f };
+            bullet->rot.z = atan2f(fireDir.y, fireDir.x) + bulletRotationOffset;
             bullet->AddComponent(new MeshRenderer(bulletMesh, bulletMaterial));
             bullet->AddComponent(new PlayerBullet(fireDir));
 
             // 탄환 레이어 Collider
-            bullet->AddComponent(new CircleCollider(1.0f, CollisionLayer::PlayerBullet));
+            bullet->AddComponent(new CircleCollider(bulletColliderRadius, CollisionLayer::PlayerBullet));
 
             // world 순회 중 직접 추가하지 않고, 다음 Update에서 추가되도록 예약
             pendingObjects->push_back(bullet);
