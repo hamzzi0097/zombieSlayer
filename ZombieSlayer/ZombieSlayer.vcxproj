@@ -131,6 +131,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AmmoUI.hpp" />
+    <ClInclude Include="Background.hpp" />
     <ClInclude Include="BlinkUIUpdater.hpp" />
     <ClInclude Include="BombController.hpp" />
     <ClInclude Include="BombCooldownUI.hpp" />
@@ -140,6 +141,10 @@
     <ClInclude Include="HeartUI.hpp" />
     <ClInclude Include="HitEffect.hpp" />
     <ClInclude Include="MonsterBulletController.hpp" />
+    <ClInclude Include="HttpClient.hpp" />
+    <ClInclude Include="json.hpp" />
+    <ClInclude Include="Leaderboard.hpp" />
+    <ClInclude Include="LeaderboardUIUpdater.hpp" />
     <ClInclude Include="MonsterSpawner.hpp" />
     <ClInclude Include="PlayerBulletController.hpp" />
     <ClInclude Include="Framework.hpp" />
@@ -188,6 +193,13 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
       <FileType>Document</FileType>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="DeadMosquito.png" />
+    <Image Include="DeadStinkBug.png" />
+    <Image Include="Mosquito.png" />
+    <Image Include="StinkBug.png" />
+    <Image Include="StinkBugBullet.png" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

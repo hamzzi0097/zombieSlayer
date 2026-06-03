@@ -22,6 +22,7 @@
 #include "Background.hpp"
 #include "ScreenShakeEffect.hpp"
 #include "DeadMonsterController.hpp"
+#include "LeaderboardUIUpdater.hpp"
 
 // 원 그리기
 std::vector<Vertex> CreateCircleVertices(float radius, int segments, XMFLOAT4 color)
@@ -92,6 +93,9 @@ public:
     // GameLoop 멤버라 주소가 안정적이며, OnEnter(Playing)에서 0으로 리셋한다.
     int   m_killCount = 0;     // 현재 라운드 누적 킬
     float m_playTime  = 0.0f;  // 현재 라운드 생존 시간(초)
+
+    // 리더보드: GameOver 진입 시 점수 업로드 + TOP10 조회(워커 스레드).
+    Leaderboard m_leaderboard;
 
     GameLoop() {
         LOG_DEBUG("GameLoop Created.");
@@ -277,6 +281,21 @@ public:
         gameOverCanvas->AddComponent(killResult);
         gameOverCanvas->AddComponent(scoreResult);
         gameOverCanvas->AddComponent(new ResultUIUpdater(&m_killCount, &m_playTime, timeResult, killResult, scoreResult));
+
+        // ── 리더보드(TOP 10) UI ─────────────────────────────────────────────
+        // 우측 컬럼에 헤딩 + 10개 행. 결과 텍스트는 LeaderboardUIUpdater가 매 프레임 갱신.
+        gameOverCanvas->AddComponent(new TextUI(shader, "TOP 10",
+            0.60f, 0.13f, 0.09f, XMFLOAT4(0.55f, 0.55f, 1.00f, 1.0f), TextUI::Align::Center));
+        std::vector<TextUI*> lbRows;
+        for (int i = 0; i < 10; ++i) {
+            float y = 0.0f - i * 0.085f;
+            TextUI* row = new TextUI(shader, "", 0.40f, y, 0.05f,
+                XMFLOAT4(0.90f, 0.90f, 0.90f, 1.0f), TextUI::Align::Left);
+            gameOverCanvas->AddComponent(row);
+            lbRows.push_back(row);
+        }
+        gameOverCanvas->AddComponent(new LeaderboardUIUpdater(&m_leaderboard, lbRows));
+
         gameOverCanvas->AddComponent(new TextUI(shader, "SPACE:RESTART  1:LOBBY",
             0.0f, -0.73f, 0.06f, XMFLOAT4(0.6f, 0.6f, 0.6f, 1.0f)));    // 안내, 회색
 
@@ -448,7 +467,11 @@ private:
             LOG_DEBUG("State Enter: GameOver");
             LOG_INFO("Game Over! Press SPACE to restart / 1 to lobby");
 
-            // 점수 및 ui 오브젝트 추가
+            // 점수 계산(ResultUIUpdater와 동일 공식) 후 리더보드 업로드+조회 시작
+            {
+                int finalScore = 10 * (int)m_playTime + 100 * m_killCount;
+                m_leaderboard.Submit(finalScore);
+            }
             break;
         }
     }
@@ -472,6 +495,7 @@ private:
             break;
         case State::GameOver:
             LOG_DEBUG("State Exit: GameOver");
+            m_leaderboard.Join();   // 워커 스레드 정리(다음 라운드/로비 진입 전)
             break;
         }
     }
