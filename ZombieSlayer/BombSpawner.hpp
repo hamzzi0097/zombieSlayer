@@ -11,19 +11,29 @@ private:
     std::vector<GameObject*>* pendingObjects;
 
     Mesh* bombMesh;
-    ShaderSet shader;
+    Mesh* effectMesh;
+    ShaderSet colorShader;
+    ShaderSet textureShader;
+    Texture* bombTexture;
+    Texture* effectTexture;
 
     bool wasRightMouseDown = false;
     float cooldown = 1.0f;
     float cooldownTimer = 0.0f;
 
 public:
-    BombSpawner(std::vector<GameObject*>* world, std::vector<GameObject*>* pendingObjects, Mesh* bombMesh, ShaderSet shader)
+    BombSpawner(std::vector<GameObject*>* world, std::vector<GameObject*>* pendingObjects,
+        Mesh* bombMesh, ShaderSet colorShader, ShaderSet textureShader,
+        Texture* bombTexture = nullptr, Texture* effectTexture = nullptr, Mesh* effectMesh = nullptr)
     {
         this->world = world;
         this->pendingObjects = pendingObjects;
         this->bombMesh = bombMesh;
-        this->shader = shader;
+        this->effectMesh = effectMesh ? effectMesh : bombMesh;
+        this->colorShader = colorShader;
+        this->textureShader = textureShader;
+        this->bombTexture = bombTexture;
+        this->effectTexture = effectTexture;
     }
 
     void Start() override {}
@@ -66,8 +76,9 @@ private:
             pOwner->pos.z
         );
 
-        Bomb* bombComponent = new Bomb(world, shader);
-        bomb->scale = { 0.06f, 0.06f, 1.0f };
+        Bomb* bombComponent = new Bomb(world, colorShader, textureShader, bombTexture, effectTexture, effectMesh);
+        float bombScale = bombTexture ? 0.08f : 0.06f;
+        bomb->scale = { bombScale, bombScale, 1.0f };
         bomb->AddComponent(new MeshRenderer(bombMesh, bombComponent->GetMaterial()));
         bomb->AddComponent(bombComponent);
 

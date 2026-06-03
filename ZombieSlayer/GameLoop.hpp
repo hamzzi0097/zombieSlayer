@@ -57,10 +57,14 @@ public:
     Mesh*          playerMesh     = nullptr;
     Mesh*          playerSpriteMesh = nullptr;
     Mesh*          bombMesh       = nullptr;
+    Mesh*          bombSpriteMesh = nullptr;
+    Mesh*          bombEffectSpriteMesh = nullptr;
     Mesh*          monsterMesh    = nullptr;
     Mesh*          playerBulletSpriteMesh = nullptr;
     Texture*       playerTexture  = nullptr;
     Texture*       playerBulletTexture = nullptr;
+    Texture*       bombTexture = nullptr;
+    Texture*       bombEffectTexture = nullptr;
     TextureMaterial* playerTextureMaterial = nullptr;
     TextureMaterial* playerBulletTextureMaterial = nullptr;
     ColorMaterial* playerMaterial = nullptr;
@@ -104,11 +108,15 @@ public:
         delete playerMesh;     playerMesh     = nullptr;
         delete playerSpriteMesh; playerSpriteMesh = nullptr;
         delete playerBulletSpriteMesh; playerBulletSpriteMesh = nullptr;
+        delete bombSpriteMesh; bombSpriteMesh = nullptr;
+        delete bombEffectSpriteMesh; bombEffectSpriteMesh = nullptr;
         delete monsterMesh;    monsterMesh    = nullptr;
         delete playerTextureMaterial; playerTextureMaterial = nullptr;
         delete playerBulletTextureMaterial; playerBulletTextureMaterial = nullptr;
         delete playerTexture;  playerTexture  = nullptr;
         delete playerBulletTexture; playerBulletTexture = nullptr;
+        delete bombTexture; bombTexture = nullptr;
+        delete bombEffectTexture; bombEffectTexture = nullptr;
         delete playerMaterial; playerMaterial = nullptr;
         delete playerBulletMaterial; playerBulletMaterial = nullptr;
         delete monsterMaterial; monsterMaterial = nullptr;
@@ -167,6 +175,12 @@ public:
         bombMesh = new Mesh();
         bombMesh->Create(bombVertices);
 
+        bombSpriteMesh = new Mesh();
+        bombSpriteMesh->Create(CreateTexturedQuad(1.0f, 1.0f));
+
+        bombEffectSpriteMesh = new Mesh();
+        bombEffectSpriteMesh->Create(CreateTexturedQuad(1.0f, 1.0f));
+
         monsterMesh = new Mesh();
         monsterMesh->Create(CreateTexturedQuad(1.0f, 1.0f));
 
@@ -198,6 +212,30 @@ public:
             LOG_WARN("Failed to load player bullet texture. Fallback to color mesh.");
             delete playerBulletTexture;
             playerBulletTexture = nullptr;
+        }
+
+        bombTexture = new Texture();
+        if (bombTexture->Load(GraphicsContext::Get()->Device, L"bomb.png"))
+        {
+            bombTexture->CreateSampler(GraphicsContext::Get()->Device);
+        }
+        else
+        {
+            LOG_WARN("Failed to load bomb texture. Fallback to color mesh.");
+            delete bombTexture;
+            bombTexture = nullptr;
+        }
+
+        bombEffectTexture = new Texture();
+        if (bombEffectTexture->Load(GraphicsContext::Get()->Device, L"bomb_effect.png"))
+        {
+            bombEffectTexture->CreateSampler(GraphicsContext::Get()->Device);
+        }
+        else
+        {
+            LOG_WARN("Failed to load bomb effect texture. Fallback to color mesh.");
+            delete bombEffectTexture;
+            bombEffectTexture = nullptr;
         }
 
         monsterMaterial = new ColorMaterial(shader, XMFLOAT4(0.8f, 0.2f, 0.2f, 1.0f));
@@ -373,7 +411,15 @@ private:
                 usePlayerBulletTexture ? 0.6f : 1.0f,
                 0.0f
             ));
-            player->AddComponent(new BombSpawner(&world, &pendingObjects, bombMesh, shader));
+            bool useBombTexture = bombSpriteMesh && bombEffectSpriteMesh && bombTexture && bombEffectTexture;
+            player->AddComponent(new BombSpawner(
+                &world, &pendingObjects,
+                useBombTexture ? bombSpriteMesh : bombMesh,
+                shader, textureShader,
+                useBombTexture ? bombTexture : nullptr,
+                useBombTexture ? bombEffectTexture : nullptr,
+                useBombTexture ? bombEffectSpriteMesh : bombMesh
+            ));
             player->AddComponent(new CircleCollider(playerColliderRadius, CollisionLayer::Player));
 
             // 몬스터 스포너 오브젝트 생성
