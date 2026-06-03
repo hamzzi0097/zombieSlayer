@@ -127,8 +127,8 @@ private:
         if (RTV)              { RTV->Release();              RTV              = nullptr; }
         if (SwapChain)        { SwapChain->Release();        SwapChain        = nullptr; }
         if (ImmediateContext) { ImmediateContext->Release(); ImmediateContext = nullptr; }
+        if (AlphaBlendState)  { AlphaBlendState->Release();  AlphaBlendState  = nullptr; }
         if (Device)           { Device->Release();           Device           = nullptr; }
-        if (AlphaBlendState)  { AlphaBlendState->Release();  AlphaBlendState   = nullptr; }
     }
 
     bool Init(HWND hWnd, int w, int h) {
