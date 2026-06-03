@@ -142,7 +142,7 @@
     <ClInclude Include="HitEffect.hpp" />
     <ClInclude Include="MonsterBulletController.hpp" />
     <ClInclude Include="HttpClient.hpp" />
-    <ClInclude Include="json.hpp" />
+    <ClInclude Include="MiniJson.hpp" />
     <ClInclude Include="Leaderboard.hpp" />
     <ClInclude Include="LeaderboardUIUpdater.hpp" />
     <ClInclude Include="MonsterSpawner.hpp" />
