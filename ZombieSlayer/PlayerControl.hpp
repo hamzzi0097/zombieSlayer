@@ -18,12 +18,18 @@ class PlayerController : public Component
     int* windowWidth;
     int* windowHeight;
 
+    float rotationOffset;
+    float screenMargin;
+
 public:
-    PlayerController(HWND hWnd, int* width, int* height) : Component()
+    PlayerController(HWND hWnd, int* width, int* height,
+        float rotationOffset = 0.0f, float screenMargin = 0.0f) : Component()
     {
         this->hWnd = hWnd;
         this->windowWidth = width;
         this->windowHeight = height;
+        this->rotationOffset = rotationOffset;
+        this->screenMargin = screenMargin;
 
         moveDir = { 0, 0 };
         mouseWorldPos = { 0, 0 };
@@ -73,7 +79,7 @@ public:
 
         // 플레이어 마우스 방향으로 회전
         float playerAngle = atan2f(playerViewPoint.y, playerViewPoint.x);
-        pOwner->rot.z = playerAngle;
+        pOwner->rot.z = playerAngle + rotationOffset;
         //printf("Rotate dir : %.4f\n", pOwner->rot.z);
     }
 
@@ -119,8 +125,9 @@ public:
         else
             halfHeight = 1.0f / aspect;
 
-        float marginX = pOwner->scale.x;
-        float marginY = pOwner->scale.y;
+        float margin = screenMargin > 0.0f ? screenMargin : pOwner->scale.x;
+        float marginX = margin;
+        float marginY = margin;
 
         pOwner->pos.x = Clamp(pOwner->pos.x, -halfWidth + marginX, halfWidth - marginX);
         pOwner->pos.y = Clamp(pOwner->pos.y, -halfHeight + marginY, halfHeight - marginY);

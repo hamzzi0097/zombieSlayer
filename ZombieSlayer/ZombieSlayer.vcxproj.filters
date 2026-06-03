@@ -110,9 +110,24 @@
     <ClInclude Include="BlinkUIUpdater.hpp">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="AmmoUI.hpp">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="bg.png">
+      <Filter>리소스 파일</Filter>
+    </None>
+    <None Include="bomb.png">
+      <Filter>리소스 파일</Filter>
+    </None>
+    <None Include="bomb_effect.png">
+      <Filter>리소스 파일</Filter>
+    </None>
+    <None Include="player.png">
+      <Filter>리소스 파일</Filter>
+    </None>
+    <None Include="spit.png">
       <Filter>리소스 파일</Filter>
     </None>
     <None Include="effect.hlsl">
