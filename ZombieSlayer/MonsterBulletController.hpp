@@ -9,7 +9,7 @@ enum class  BulletState
     ATTACK
 };
 
-class MonsterBullet : public Component {
+class MonsterBulletController : public Component {
 private:
     BulletState bulletState;
     XMFLOAT2 moveDir;
@@ -18,7 +18,7 @@ private:
     float lifeTime;
 
 public:
-    MonsterBullet(GameObject* player, float moveSpeed = 3.0f) {
+    MonsterBulletController(GameObject* player, float moveSpeed = 3.0f) {
         bulletState = BulletState::TRACE;
         this->player = player;
         this->moveSpeed = moveSpeed;

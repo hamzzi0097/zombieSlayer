@@ -1,7 +1,7 @@
 #pragma once
 #include "ObjectBase.hpp"
 #include "MeshRenderer.hpp"
-#include "PlayerBullet.hpp"
+#include "PlayerBulletController.hpp"
 #include "Collider.hpp"
 #include "Logger.hpp"
 
@@ -168,7 +168,7 @@ private:
             bullet->scale = { bulletScale, bulletScale, 1.0f };
             bullet->rot.z = atan2f(fireDir.y, fireDir.x) + bulletRotationOffset;
             bullet->AddComponent(new MeshRenderer(bulletMesh, bulletMaterial));
-            bullet->AddComponent(new PlayerBullet(fireDir));
+            bullet->AddComponent(new PlayerBulletController(fireDir));
 
             // 탄환 레이어 Collider
             bullet->AddComponent(new CircleCollider(bulletColliderRadius, CollisionLayer::PlayerBullet));

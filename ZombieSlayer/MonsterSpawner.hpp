@@ -1,8 +1,8 @@
 #pragma once
 #include "Framework.hpp"
-#include "MeleeMonsterControl.hpp"
+#include "MeleeMonsterController.hpp"
 #include "Collider.hpp"
-#include "RangedMonsterControl.hpp"
+#include "RangedMonsterController.hpp"
 #include "ObjectBase.hpp"
 #include "MonsterBulletSpawner.hpp"
 
@@ -139,7 +139,7 @@ public:
         }
         if (monster == 0) {
             GameObject* monster = new GameObject(curPos.x, curPos.y, 0.0f);
-            monster->AddComponent(new MeleeMonsterControl(player, 0.5f));
+            monster->AddComponent(new MeleeMonsterController(player, 0.5f));
             monster->AddComponent(new MeshRenderer(monsterMesh, mosquitoMat));
             monster->AddComponent(new CircleCollider(1.0f, CollisionLayer::MeleeMonster));
             monster->scale = { 0.1f,0.1f,1.0f };
@@ -148,7 +148,7 @@ public:
         }
         else if (monster == 1) {
             GameObject* monster = new GameObject(curPos.x, curPos.y, 0.0f);
-            monster->AddComponent(new RangedMonsterControl(player, 0.5f));
+            monster->AddComponent(new RangedMonsterController(player, 0.5f));
             monster->AddComponent(new MeshRenderer(monsterMesh, stinkBugMat));
             monster->AddComponent(new CircleCollider(1.0f, CollisionLayer::RangedMonster));
             monster->scale = { 0.1f,0.1f,1.0f };

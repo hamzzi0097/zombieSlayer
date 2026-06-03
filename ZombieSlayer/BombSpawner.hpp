@@ -1,9 +1,9 @@
 #pragma once
 #include "ObjectBase.hpp"
 #include "MeshRenderer.hpp"
-#include "Bomb.hpp"
+#include "BombController.hpp"
 #include "Logger.hpp"
-#include "ScreenShake.hpp"
+#include "ScreenShakeEffect.hpp"
 
 class BombSpawner : public Component
 {
@@ -17,7 +17,7 @@ private:
     ShaderSet textureShader;
     Texture* bombTexture;
     Texture* effectTexture;
-    ScreenShake* screenShake = nullptr;   // 참조 (소유 X) — 폭발 흔들림 배선용
+    ScreenShakeEffect* screenShake = nullptr;   // 참조 (소유 X) — 폭발 흔들림 배선용
 
     bool wasRightMouseDown = false;
     float cooldown = 1.0f;
@@ -27,7 +27,7 @@ public:
     BombSpawner(std::vector<GameObject*>* world, std::vector<GameObject*>* pendingObjects,
         Mesh* bombMesh, ShaderSet colorShader, ShaderSet textureShader,
         Texture* bombTexture = nullptr, Texture* effectTexture = nullptr, Mesh* effectMesh = nullptr,
-        ScreenShake* screenShake = nullptr)
+        ScreenShakeEffect* screenShake = nullptr)
     {
         this->world = world;
         this->pendingObjects = pendingObjects;
@@ -80,11 +80,11 @@ private:
             pOwner->pos.z
         );
 
-        Bomb* bombComponent = new Bomb(world, colorShader, textureShader, bombTexture, effectTexture, effectMesh);
-        // 폭발 연출 배선: Bomb은 ScreenShake를 모르고 콜백만 노출
+        BombController* bombComponent = new BombController(world, colorShader, textureShader, bombTexture, effectTexture, effectMesh);
+        // 폭발 연출 배선: Bomb은 ScreenShakeEffect를 모르고 콜백만 노출
         if (screenShake)
         {
-            ScreenShake* shake = screenShake;
+            ScreenShakeEffect* shake = screenShake;
             bombComponent->onExplode = [shake]() { shake->Trigger(0.25f, 0.04f); };
         }
         float bombScale = bombTexture ? 0.08f : 0.06f;

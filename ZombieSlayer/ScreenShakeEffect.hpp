@@ -2,14 +2,14 @@
 #include "ObjectBase.hpp"
 #include <cstdlib>
 
-// [ScreenShake 컴포넌트]
+// [ScreenShakeEffect 컴포넌트]
 // 화면 흔들림 offset을 계산해 제공한다(직접 렌더하지 않음 — 변환형 이펙트).
 // screenShakeObject에 부착되어 매 프레임 Update로 offset을 갱신하고,
 // GameLoop::Render가 GetPixelOffset()을 읽어 뷰포트를 통째로 이동시킨다.
 //
 // Trigger는 BombSpawner가 콜백으로 배선해 인스턴스로 호출하고, GetPixelOffset은
 // GameLoop이 핸들로 호출한다. (static 싱글톤 제거 — 프로젝트의 DI/콜백 패턴과 일관)
-class ScreenShake : public Component
+class ScreenShakeEffect : public Component
 {
 private:
     float duration = 0.0f;
@@ -19,7 +19,7 @@ private:
     XMFLOAT2 offset = { 0.0f, 0.0f };
 
 public:
-    ScreenShake() {}
+    ScreenShakeEffect() {}
 
     void Trigger(float shakeDuration = 0.25f, float shakePower = 0.04f)
     {

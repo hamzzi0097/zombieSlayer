@@ -125,23 +125,23 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="MeleeMonsterControl.hpp" />
+    <ClCompile Include="MeleeMonsterController.hpp" />
     <ClCompile Include="MonsterBulletSpawner.hpp" />
-    <ClCompile Include="RangedMonsterControl.hpp" />
+    <ClCompile Include="RangedMonsterController.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AmmoUI.hpp" />
     <ClInclude Include="BlinkUIUpdater.hpp" />
-    <ClInclude Include="Bomb.hpp" />
+    <ClInclude Include="BombController.hpp" />
     <ClInclude Include="BombCooldownUI.hpp" />
     <ClInclude Include="BombSpawner.hpp" />
     <ClInclude Include="Collider.hpp" />
-    <ClInclude Include="DeadMonsterControl.hpp" />
+    <ClInclude Include="DeadMonsterController.hpp" />
     <ClInclude Include="HeartUI.hpp" />
     <ClInclude Include="HitEffect.hpp" />
-    <ClInclude Include="MonsterBullet.hpp" />
+    <ClInclude Include="MonsterBulletController.hpp" />
     <ClInclude Include="MonsterSpawner.hpp" />
-    <ClInclude Include="PlayerBullet.hpp" />
+    <ClInclude Include="PlayerBulletController.hpp" />
     <ClInclude Include="Framework.hpp" />
     <ClInclude Include="GameLoop.hpp" />
     <ClInclude Include="GraphicsContext.hpp" />
@@ -151,9 +151,9 @@
     <ClInclude Include="MeshRenderer.hpp" />
     <ClInclude Include="ObjectBase.hpp" />
     <ClInclude Include="PlayerBulletSpawner.hpp" />
-    <ClInclude Include="PlayerControl.hpp" />
+    <ClInclude Include="PlayerController.hpp" />
     <ClInclude Include="PlayerHealth.hpp" />
-    <ClInclude Include="ScreenShake.hpp" />
+    <ClInclude Include="ScreenShakeEffect.hpp" />
     <ClInclude Include="ResultUIUpdater.hpp" />
     <ClInclude Include="StatsUIUpdater.hpp" />
     <ClInclude Include="TextUI.hpp" />
