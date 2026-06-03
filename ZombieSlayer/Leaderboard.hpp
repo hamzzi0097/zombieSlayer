@@ -18,7 +18,7 @@ public:
 
     // TODO: 본인 Firebase Realtime DB 호스트로 교체 (스킴/끝슬래시 제외)
     //   예: "my-game-default-rtdb.firebaseio.com"
-    static constexpr const wchar_t* HOST = L"YOUR-PROJECT-default-rtdb.firebaseio.com";
+    static constexpr const wchar_t* HOST = L"spit-master-default-rtdb.asia-southeast1.firebasedatabase.app";
 
     ~Leaderboard() { Join(); }
 

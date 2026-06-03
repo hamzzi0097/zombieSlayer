@@ -284,11 +284,11 @@ public:
         // ── 리더보드(TOP 10) UI ─────────────────────────────────────────────
         // 우측 컬럼에 헤딩 + 10개 행. 결과 텍스트는 LeaderboardUIUpdater가 매 프레임 갱신.
         gameOverCanvas->AddComponent(new TextUI(shader, "TOP 10",
-            0.55f, 0.55f, 0.09f, XMFLOAT4(0.30f, 0.90f, 1.00f, 1.0f), TextUI::Align::Center));
+            0.60f, 0.13f, 0.09f, XMFLOAT4(0.55f, 0.55f, 1.00f, 1.0f), TextUI::Align::Center));
         std::vector<TextUI*> lbRows;
         for (int i = 0; i < 10; ++i) {
-            float y = 0.42f - i * 0.085f;   // 0.42 → -0.345
-            TextUI* row = new TextUI(shader, "", 0.30f, y, 0.05f,
+            float y = 0.0f - i * 0.085f;
+            TextUI* row = new TextUI(shader, "", 0.40f, y, 0.05f,
                 XMFLOAT4(0.90f, 0.90f, 0.90f, 1.0f), TextUI::Align::Left);
             gameOverCanvas->AddComponent(row);
             lbRows.push_back(row);
