@@ -5,6 +5,7 @@
 #include <ctime>
 #include <fstream>
 #include <string>
+#include "RemoteLogger.hpp"
 
 class Logger {
 public:
@@ -19,6 +20,8 @@ public:
     Logger& operator=(const Logger&) = delete;
 
     void SetMinLevel(Level lv) { m_minLevel = lv; }
+    void SetRemoteEnabled(bool enabled) { m_remoteEnabled = enabled; }
+    void SetRemoteMinLevel(Level lv) { m_remoteMinLevel = lv; }
 
     // file, func는 매크로가 __FILE__ / __FUNCTION__으로 자동 주입
     void Log(Level lv, const char* file, const char* func, const char* fmt, ...) {
@@ -51,14 +54,29 @@ public:
 
         if (m_file.is_open())
             m_file << line << std::flush;
+
+        if (m_remoteEnabled && lv >= m_remoteMinLevel)
+            RemoteLogger::Get().Submit(NameOf(lv), fileName, func, msgBuf);
     }
 
 private:
     Logger() = default;
 
     Level         m_minLevel = Level::Debug;
+    Level         m_remoteMinLevel = Level::Info;
+    bool          m_remoteEnabled = true;
     std::ofstream m_file;
     HANDLE        m_hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+
+    static const char* NameOf(Level lv) {
+        switch (lv) {
+        case Level::Debug: return "DEBUG";
+        case Level::Info:  return "INFO";
+        case Level::Warn:  return "WARN";
+        case Level::Error: return "ERROR";
+        }
+        return "UNKNOWN";
+    }
 
     static const char* TagOf(Level lv) {
         switch (lv) {
