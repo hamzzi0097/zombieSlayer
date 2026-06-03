@@ -232,11 +232,14 @@ public:
             XMFLOAT4(0.9f, 0.9f, 0.9f, 1.0f), TextUI::Align::Center);
         TextUI* killResult = new TextUI(shader, "KILLS 0", 0.0f, -0.16f, 0.10f,
             XMFLOAT4(1.0f, 0.85f, 0.1f, 1.0f), TextUI::Align::Center);
+        TextUI* scoreResult = new TextUI(shader, "SCORE 00000", 0.0f, -0.34f, 0.10f, 
+            XMFLOAT4(0.30f, 0.90f, 1.00f, 1.0f), TextUI::Align::Center);
         gameOverCanvas->AddComponent(timeResult);
         gameOverCanvas->AddComponent(killResult);
-        gameOverCanvas->AddComponent(new ResultUIUpdater(&m_killCount, &m_playTime, timeResult, killResult));
+        gameOverCanvas->AddComponent(scoreResult);
+        gameOverCanvas->AddComponent(new ResultUIUpdater(&m_killCount, &m_playTime, timeResult, killResult, scoreResult));
         gameOverCanvas->AddComponent(new TextUI(shader, "SPACE:RESTART  1:LOBBY",
-            0.0f, -0.55f, 0.06f, XMFLOAT4(0.6f, 0.6f, 0.6f, 1.0f)));    // 안내, 회색
+            0.0f, -0.73f, 0.06f, XMFLOAT4(0.6f, 0.6f, 0.6f, 1.0f)));    // 안내, 회색
 
         // Lobby 캔버스: 타이틀 + 태그라인 + 깜빡이는 시작 안내 + 조작 안내
         lobbyCanvas = new GameObject(0.0f, 0.0f, 0.0f);

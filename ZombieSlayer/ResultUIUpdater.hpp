@@ -10,9 +10,10 @@
 class ResultUIUpdater : public Component {
 public:
     ResultUIUpdater(const int* killCount, const float* playTime,
-                    TextUI* timeLabel, TextUI* killLabel)
+                    TextUI* timeLabel, TextUI* killLabel, TextUI* scoreLabel)
         : m_killCount(killCount), m_playTime(playTime),
-          m_timeLabel(timeLabel), m_killLabel(killLabel) {}
+          m_timeLabel(timeLabel), m_killLabel(killLabel),
+          m_scoreLabel(scoreLabel){}
 
     void Start() override {}
     void Input() override {}
@@ -29,6 +30,11 @@ public:
         char killBuf[24];
         snprintf(killBuf, sizeof(killBuf), "KILLS %d", kills);
         if (m_killLabel) m_killLabel->SetText(killBuf);
+
+        int score = 10 * totalSec + 100 * kills;
+        char scoreBuf[24];
+        snprintf(scoreBuf, sizeof(scoreBuf), "SCORE %d", score);
+        if (m_scoreLabel) m_scoreLabel->SetText(scoreBuf);
     }
 
     void Render() override {}
@@ -38,4 +44,5 @@ private:
     const float* m_playTime  = nullptr;
     TextUI*      m_timeLabel  = nullptr; // 참조 (소유 X)
     TextUI*      m_killLabel  = nullptr; // 참조 (소유 X)
+    TextUI*      m_scoreLabel = nullptr; // 참조 (소유 X)
 };
