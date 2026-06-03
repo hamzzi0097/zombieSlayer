@@ -62,9 +62,7 @@ public:
             float angle = std::atan2(moveDir.y, moveDir.x);
             this->pOwner->rot.z = angle - (3.141592f / 2.0f);
         }
-        if (len <= 0.8f) {
-            ChangeState(RangedState::RANGEDATTACK);
-        }
+
         switch (rangedState)
         {
 
@@ -73,6 +71,10 @@ public:
 
             this->pOwner->pos.x += moveDir.x * moveSpeed * dt;
             this->pOwner->pos.y += moveDir.y * moveSpeed * dt;
+
+            if (len <= 0.8f) {
+                ChangeState(RangedState::RANGEDATTACK);
+            }
             break;
         case RangedState::DEAD:
             pOwner->isObjDead = true;

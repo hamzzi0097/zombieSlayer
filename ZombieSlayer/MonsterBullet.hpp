@@ -23,7 +23,7 @@ public:
         this->player = player;
         this->moveSpeed = moveSpeed;
         moveDir = { 0.0f,0.0f };
-        lifeTime = 2.0f;
+        lifeTime = 5.0f;
     }
 
     void Start()override {
