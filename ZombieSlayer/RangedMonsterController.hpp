@@ -1,27 +1,27 @@
 #pragma once
 #include "ObjectBase.hpp"
 #include "Collider.hpp"
-#include "Logger.hpp"
 #include "PlayerHealth.hpp"
 
-enum class  MeleeState
+enum class RangedState
 {
     TRACE,
     DEAD,
-    ATTACK
+    RANGEDATTACK,
+    MELEEATTACK
 };
 
-class MeleeMonsterControl : public Component {
+class RangedMonsterController : public Component {
 private:
-    MeleeState meleeState;
+    RangedState rangedState;
     XMFLOAT2 moveDir;
     GameObject* player;
     float moveSpeed;
     int hp;
 
 public:
-    MeleeMonsterControl(GameObject* player, float moveSpeed = 3.0f) {
-        meleeState = MeleeState::TRACE;
+    RangedMonsterController(GameObject* player, float moveSpeed = 3.0f) {
+        rangedState = RangedState::TRACE;
         this->player = player;
         this->moveSpeed = moveSpeed;
         moveDir = { 0,0 };
@@ -34,7 +34,6 @@ public:
         moveDir.x = player->pos.x - this->pOwner->pos.x;
         moveDir.y = player->pos.y - this->pOwner->pos.y;
         float len = sqrtf(moveDir.x * moveDir.x + moveDir.y * moveDir.y);
-
         if (len > 0.0f)
         {
             moveDir.x /= len;
@@ -49,7 +48,7 @@ public:
 
     void Update(float dt) override {
         if (hp <= 0) {
-            ChangeState(MeleeState::DEAD);
+            ChangeState(RangedState::DEAD);
         }
         moveDir.x = player->pos.x - this->pOwner->pos.x;
         moveDir.y = player->pos.y - this->pOwner->pos.y;
@@ -63,30 +62,37 @@ public:
             float angle = std::atan2(moveDir.y, moveDir.x);
             this->pOwner->rot.z = angle - (3.141592f / 2.0f);
         }
-        switch (meleeState)
+
+        switch (rangedState)
         {
 
-        case MeleeState::TRACE:
+        case RangedState::TRACE:
             //플레이어한테 이동
 
             this->pOwner->pos.x += moveDir.x * moveSpeed * dt;
             this->pOwner->pos.y += moveDir.y * moveSpeed * dt;
 
-
+            if (len <= 0.8f) {
+                ChangeState(RangedState::RANGEDATTACK);
+            }
             break;
-        case MeleeState::DEAD:
+        case RangedState::DEAD:
             pOwner->isObjDead = true;
             break;
-        case MeleeState::ATTACK:
+        case RangedState::RANGEDATTACK:
+            if (len > 0.82f) {
+                ChangeState(RangedState::TRACE);
+            }
+
+            break;
+        case RangedState::MELEEATTACK:
             PlayerHealth* playerHealth = player->GetComponent<PlayerHealth>();
 
             if (playerHealth)
             {
                 playerHealth->TakeDamage();
             }
-
-            ChangeState(MeleeState::TRACE);
-            break;
+            ChangeState(RangedState::TRACE);
         }
     }
 
@@ -94,9 +100,8 @@ public:
 
     }
 
-    void ChangeState(MeleeState nextState) {
-        meleeState = nextState;
-        LOG_DEBUG("Next State : %d", nextState);
+    void ChangeState(RangedState nextState) {
+        rangedState = nextState;
     }
 
     void getDamaged(int damage) {
@@ -106,17 +111,12 @@ public:
     void OnCollision(GameObject* obj) override
     {
         Collider* curObject = obj->GetComponent<Collider>();
-        if (curObject && curObject->layer == CollisionLayer::Player)
-        {
-            PlayerHealth* playerHealth = obj->GetComponent<PlayerHealth>();
-
-            if (playerHealth && playerHealth->IsInvincible())
-            {
-                return;
-            }
-
-            ChangeState(MeleeState::ATTACK);
-
+        if (curObject && curObject->layer == CollisionLayer::Player) {
+            ChangeState(RangedState::MELEEATTACK);
         }
+    }
+
+    RangedState getState() {
+        return rangedState;
     }
 };

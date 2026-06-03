@@ -8,7 +8,7 @@ enum class  DeadState
     DISTORY
 };
 
-class DeadMonsterControl : public Component {
+class DeadMonsterController : public Component {
 private:
     DeadState deadState;
     XMFLOAT2 moveDir;
@@ -17,7 +17,7 @@ private:
     float distoryTime;
 
 public:
-    DeadMonsterControl(GameObject* player, float moveSpeed = 3.0f) {
+    DeadMonsterController(GameObject* player, float moveSpeed = 3.0f) {
         deadState = DeadState::TRACE;
         this->player = player;
         this->moveSpeed = moveSpeed;

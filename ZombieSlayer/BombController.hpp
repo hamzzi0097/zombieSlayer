@@ -2,9 +2,9 @@
 #include "ObjectBase.hpp"
 #include "MeshRenderer.hpp"
 #include "Material.hpp"
-#include "MeleeMonsterControl.hpp"
-#include "RangedMonsterControl.hpp"
-#include "ScreenShake.hpp"
+#include "MeleeMonsterController.hpp"
+#include "RangedMonsterController.hpp"
+#include <functional>
 
 enum class BombState
 {
@@ -13,7 +13,7 @@ enum class BombState
     Dead
 };
 
-class Bomb : public Component
+class BombController : public Component
 {
 private:
     std::vector<GameObject*>* world;
@@ -35,7 +35,11 @@ private:
     int damage = 5;
 
 public:
-    Bomb(std::vector<GameObject*>* world, ShaderSet colorShader, ShaderSet textureShader,
+    // 폭발 시점에 호출되는 콜백 (이펙트 연출용). GameLoop/BombSpawner가 배선.
+    // BombController는 무엇이 연결됐는지(ScreenShakeEffect 등) 모른다 — 결합도 0.
+    std::function<void()> onExplode;
+
+    BombController(std::vector<GameObject*>* world, ShaderSet colorShader, ShaderSet textureShader,
         Texture* bombTexture = nullptr, Texture* effectTexture = nullptr, Mesh* effectMesh = nullptr)
     {
         this->world = world;
@@ -52,7 +56,7 @@ public:
         }
     }
 
-    ~Bomb()
+    ~BombController()
     {
         delete fallbackMaterial;
         fallbackMaterial = nullptr;
@@ -85,7 +89,7 @@ public:
             if (fuseTimer <= 0.0f)
             {
                 ApplyDamage();
-                ScreenShake::Trigger(0.25f, 0.04f);
+                if (onExplode) onExplode();
                 state = BombState::Exploding;
                 explosionTimer = explosionDuration;
                 SwitchToExplosionEffect();
@@ -191,10 +195,10 @@ private:
 
             if (distSq > radiusSq) continue;
 
-            if (MeleeMonsterControl* melee = obj->GetComponent<MeleeMonsterControl>())
+            if (MeleeMonsterController* melee = obj->GetComponent<MeleeMonsterController>())
                 melee->getDamaged(damage);
 
-            if (RangedMonsterControl* ranged = obj->GetComponent<RangedMonsterControl>())
+            if (RangedMonsterController* ranged = obj->GetComponent<RangedMonsterController>())
                 ranged->getDamaged(damage);
         }
     }
