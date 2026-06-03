@@ -501,6 +501,12 @@ private:
     }
 
     void Input() {
+        // F: 전체화면(borderless) <-> 1920x1080 창모드 토글 (모든 상태 공통)
+        if (GetAsyncKeyState('F') & 0x0001) {
+            win.ToggleFullscreen();
+            GraphicsContext::Get()->Resize(win.Width, win.Height);
+        }
+
         switch (m_state) {
         case State::Lobby:
             if (GetAsyncKeyState(VK_SPACE) & 0x0001)
