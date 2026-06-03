@@ -573,6 +573,7 @@ private:
                         else {
                             curMonsterMat = curMonsterSpawner->deadMonsterMesh(1);
                         }
+                        
                         deadMonster->AddComponent(new DeadMonsterControl(player, 0.5f));
                         deadMonster->AddComponent(new MeshRenderer(monsterMesh, curMonsterMat));
                         deadMonster->scale = { 0.1f, 0.1f, 1.0f };

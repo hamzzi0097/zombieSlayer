@@ -77,9 +77,14 @@ public:
         delete mosquitoMat;
         delete stinkBugMat;
         delete bulletMat;
+        delete deadMosquitoMat;
+        delete deadStinkBugMat;
         mosquitoMat = nullptr;
         stinkBugMat = nullptr;
         bulletMat = nullptr;
+        deadMosquitoMat = nullptr;
+        deadStinkBugMat = nullptr;
+
     }
     void Start()override {
     }
@@ -173,6 +178,9 @@ public:
         case 1:
 
             return deadStinkBugMat;
+        default:
+            LOG_ERROR("INVALID DEADMONSTER INTERGER : %d ",n);
+            return deadMosquitoMat;
         }
     }
 };
