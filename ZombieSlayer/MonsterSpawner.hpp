@@ -66,11 +66,11 @@ public:
 
         deadMosquitoTex.Load(dev, L"DeadMosquito.png");
         deadMosquitoTex.CreateSampler(dev);
-        deadMosquitoMat = new TextureMaterial(textureShader, &deadMosquitoTex);
+        deadMosquitoMat = new TextureMaterial(textureShader, &deadMosquitoTex, XMFLOAT4{ 1.0f,1.0f,1.0f,0.5f });
 
         deadStinkBugTex.Load(dev, L"DeadStinkBug.png");
         deadStinkBugTex.CreateSampler(dev);
-        deadStinkBugMat = new TextureMaterial(textureShader, &deadStinkBugTex);
+        deadStinkBugMat = new TextureMaterial(textureShader, &deadStinkBugTex, XMFLOAT4{ 1.0f,1.0f,1.0f,0.5f });
     }
 
     ~MonsterSpawner() {
