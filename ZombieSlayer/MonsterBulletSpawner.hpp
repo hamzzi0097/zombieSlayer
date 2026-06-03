@@ -1,9 +1,9 @@
 #pragma once
 #include "ObjectBase.hpp"
 #include "Collider.hpp"
-#include "MonsterBullet.hpp"
+#include "MonsterBulletController.hpp"
 #include "MeshRenderer.hpp"
-#include "RangedMonsterControl.hpp"
+#include "RangedMonsterController.hpp"
 
 
 class MonsterBulletSpawner : public Component {
@@ -35,7 +35,7 @@ public:
             attackCooldown -= dt;
 
         if (attackCooldown <= 0.0f) {
-            RangedMonsterControl* rangedMonster = this->pOwner->GetComponent<RangedMonsterControl>();
+            RangedMonsterController* rangedMonster = this->pOwner->GetComponent<RangedMonsterController>();
             if (rangedMonster && rangedMonster->getState() == RangedState::RANGEDATTACK) {
                 SpawnBullet();
                 attackCooldown = ATTACK_INTERVAL;
@@ -54,7 +54,7 @@ public:
 
         bullet->scale = { 0.03f, 0.03f, 1.0f };
         bullet->AddComponent(new MeshRenderer(bulletMesh, bulletMaterial));
-        bullet->AddComponent(new MonsterBullet(player, 0.5f));
+        bullet->AddComponent(new MonsterBulletController(player, 0.5f));
         bullet->AddComponent(new CircleCollider(1.0f, CollisionLayer::MonsterBullet));
 
         pendingObjects->push_back(bullet);

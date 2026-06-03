@@ -6,7 +6,7 @@
 #include "Logger.hpp"
 #include "Collider.hpp"
 #include "PlayerBulletSpawner.hpp"
-#include "PlayerControl.hpp"
+#include "PlayerController.hpp"
 #include "MonsterSpawner.hpp"
 #include "MeshRenderer.hpp"
 #include "HeartUI.hpp"
@@ -20,8 +20,8 @@
 #include "BlinkUIUpdater.hpp"
 #include "AmmoUI.hpp"
 #include "Background.hpp"
-#include "ScreenShake.hpp"
-#include "DeadMonsterControl.hpp"
+#include "ScreenShakeEffect.hpp"
+#include "DeadMonsterController.hpp"
 #include "LeaderboardUIUpdater.hpp"
 
 // 원 그리기
@@ -86,6 +86,7 @@ public:
 
     // screen 흔들리는 역할
     GameObject* screenShakeObject = nullptr;
+    ScreenShakeEffect* screenShake = nullptr;   // 핸들 (screenShakeObject가 소유)
 
     // StatsUI 데이터 소스 — 주소를 StatsUI에 넘겨 매 프레임 읽게 한다.
     // 통계 데이터 소스 — 주소를 StatsUIUpdater/ResultUIUpdater에 넘겨 매 프레임 읽게 한다.
@@ -319,7 +320,8 @@ public:
 
         // 스크린 흔들리는 오브젝트
         screenShakeObject = new GameObject(0.0f, 0.0f, 0.0f);
-        screenShakeObject->AddComponent(new ScreenShake());
+        screenShake = new ScreenShakeEffect();
+        screenShakeObject->AddComponent(screenShake);
 
         return true;
     }
@@ -440,7 +442,8 @@ private:
                 shader, textureShader,
                 useBombTexture ? bombTexture : nullptr,
                 useBombTexture ? bombEffectTexture : nullptr,
-                useBombTexture ? bombEffectSpriteMesh : bombMesh
+                useBombTexture ? bombEffectSpriteMesh : bombMesh,
+                screenShake
             ));
             player->AddComponent(new CircleCollider(playerColliderRadius, CollisionLayer::Player));
 
@@ -560,20 +563,20 @@ private:
                     // 몬스터가 죽어서 제거되는 경우 → 킬 1 증가.
                     // 몬스터는 불릿/폭탄 모두 getDamaged()→DEAD→isObjDead 경로로만
                     // 죽으므로, 제거 시점에서 세면 사망 원인과 무관하게 정확히 카운트된다.
-                    if ((*obj)->GetComponent<MeleeMonsterControl>() ||
-                        (*obj)->GetComponent<RangedMonsterControl>()) {
+                    if ((*obj)->GetComponent<MeleeMonsterController>() ||
+                        (*obj)->GetComponent<RangedMonsterController>()) {
                         m_killCount++;
                         MonsterSpawner* curMonsterSpawner = monsterSpawner->GetComponent<MonsterSpawner>();
                         curMonsterSpawner->setSpawnedCount(curMonsterSpawner->getSpawnedCount() - 1); // 몬스터 죽어서 스폰된 몬스터 개수 감소
                         GameObject* deadMonster = new GameObject((*obj)->pos.x, (*obj)->pos.y, (*obj)->pos.z);
                         TextureMaterial* curMonsterMat;
-                        if ((*obj)->GetComponent<MeleeMonsterControl>()) {
+                        if ((*obj)->GetComponent<MeleeMonsterController>()) {
                             curMonsterMat = curMonsterSpawner->deadMonsterMesh(0);
                         }
                         else {
                             curMonsterMat = curMonsterSpawner->deadMonsterMesh(1);
                         }
-                        deadMonster->AddComponent(new DeadMonsterControl(player, 0.5f));
+                        deadMonster->AddComponent(new DeadMonsterController(player, 0.5f));
                         deadMonster->AddComponent(new MeshRenderer(monsterMesh, curMonsterMat));
                         deadMonster->scale = { 0.1f, 0.1f, 1.0f };
 
@@ -619,7 +622,7 @@ private:
             float col[] = { 0.1f, 0.2f, 0.3f, 1.0f };
             gfx->ImmediateContext->ClearRenderTargetView(gfx->RTV, col);
 
-            XMFLOAT2 screenShakeOffset = ScreenShake::GetPixelOffset((float)win.Width, (float)win.Height);
+            XMFLOAT2 screenShakeOffset = screenShake->GetPixelOffset((float)win.Width, (float)win.Height);
             D3D11_VIEWPORT vp = { screenShakeOffset.x, screenShakeOffset.y, (float)win.Width, (float)win.Height, 0, 1 };
             gfx->ImmediateContext->RSSetViewports(1, &vp);
             gfx->ImmediateContext->OMSetRenderTargets(1, &gfx->RTV, nullptr);
