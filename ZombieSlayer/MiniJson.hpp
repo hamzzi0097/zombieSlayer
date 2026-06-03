@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include <utility>
 
 // [MiniJson]
 // 리더보드(Firebase Realtime DB) 통신에 필요한 최소 JSON 기능만 담은 경량 파서.
@@ -34,7 +35,9 @@ namespace MiniJson {
 
     class Parser {
     public:
-        explicit Parser(const std::string& src) : s(src), i(0) {}
+        // 입력을 값으로 복사해 보관한다(응답이 작아 비용 무시 가능).
+        // 참조 멤버로 두면 임시 객체로 생성 시 dangling 위험이 있어 의도적으로 복사한다.
+        explicit Parser(std::string src) : s(std::move(src)), i(0) {}
 
         // 최상위 객체의 멤버 개수. (객체가 아니거나 비었으면 0)
         int CountObjectMembers() {
@@ -83,7 +86,7 @@ namespace MiniJson {
         }
 
     private:
-        const std::string& s;
+        std::string s;
         size_t i;
 
         char Peek() const { return i < s.size() ? s[i] : '\0'; }

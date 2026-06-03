@@ -3,8 +3,10 @@
 #include <vector>
 #include <thread>
 #include <mutex>
+#include <condition_variable>
 #include <atomic>
 #include <memory>
+#include <chrono>
 #include <algorithm>
 #include "HttpClient.hpp"
 #include "MiniJson.hpp"
@@ -12,8 +14,9 @@
 // [Leaderboard]
 // GameOver 시 점수를 Firebase Realtime DB에 업로드하고 TOP 10을 받아온다.
 // 통신은 detach된 워커 스레드에서 수행하고, 메인 스레드는 절대 블로킹되지 않는다.
-// 워커가 결과를 쓰는 저장소(SharedState)를 shared_ptr로 함께 소유하므로,
-// 메인이 새 작업을 시작하거나 종료해도 옛 워커는 옛 저장소에만 안전하게 접근한다.
+//  - 워커가 결과 저장소(SharedState)를 shared_ptr로 함께 소유 → 라운드가 바뀌어도 안전.
+//  - 진행 중 워커 수(Registry)를 추적 → 프로그램 종료 시점에만 '짧게 한정' 대기해서
+//    통신 도중 프로세스가 정리되며 발생할 수 있는 위험을 없앤다(게임 중 멈춤은 없음).
 class Leaderboard {
 public:
     struct Entry { std::string name; int score; };
@@ -23,14 +26,37 @@ public:
     //   예: "my-game-default-rtdb.firebaseio.com"
     static constexpr const wchar_t* HOST = L"spit-master-default-rtdb.asia-southeast1.firebasedatabase.app";
 
-    // 워커와 메인이 공유하는 상태. shared_ptr로 수명을 함께 관리한다.
+    // 종료 시 최대 대기 시간(초). 보통은 inFlight==0이라 즉시 반환하고,
+    // 게임오버 직후 네트워크가 느린 상태에서 종료할 때만 이 시간만큼만 기다린다.
+    static constexpr int SHUTDOWN_DRAIN_SECONDS = 6;
+
+    // 워커와 메인이 공유하는 결과 저장소. shared_ptr로 수명을 함께 관리한다.
     struct SharedState {
         std::mutex          mtx;
         std::atomic<Status> status{ Status::Idle };
         std::vector<Entry>  entries;
     };
 
-    Leaderboard() : m_state(std::make_shared<SharedState>()) {}
+    // 진행 중인 워커 수 추적용. shared_ptr이라 Leaderboard가 먼저 파괴돼도
+    // 살아있는 워커가 함께 소유하는 동안 유효하다.
+    struct Registry {
+        std::mutex              mtx;
+        std::condition_variable cv;
+        int                     inFlight = 0;
+    };
+
+    Leaderboard()
+        : m_state(std::make_shared<SharedState>())
+        , m_registry(std::make_shared<Registry>()) {}
+
+    // 종료 시점에만 호출됨. 진행 중 워커가 끝날 때까지 한정 대기(없으면 즉시 반환).
+    ~Leaderboard() {
+        std::unique_lock<std::mutex> lk(m_registry->mtx);
+        m_registry->cv.wait_for(lk, std::chrono::seconds(SHUTDOWN_DRAIN_SECONDS),
+            [this] { return m_registry->inFlight == 0; });
+        // 시간 내 못 끝낸 워커가 있더라도 detach된 상태이고 자기 자원만 만지므로
+        // 그대로 두고 진행한다(OS가 프로세스 종료 시 정리).
+    }
 
     // GameOver 진입 시 호출. 블로킹 없이 새 워커를 시작한다.
     void Submit(int score) {
@@ -39,8 +65,19 @@ public:
         state->status = Status::Loading;
         m_state = state;
 
-        // 워커가 state를 함께 소유 → 메인이 무엇을 하든 자기 저장소는 살아있다.
-        std::thread([state, score]() { Worker(state, score); }).detach();
+        auto registry = m_registry;
+        {
+            std::lock_guard<std::mutex> lk(registry->mtx);
+            registry->inFlight++;
+        }
+
+        // 워커가 state·registry를 함께 소유 → 메인이 무엇을 하든 안전하게 동작/정리.
+        std::thread([state, registry, score]() {
+            Worker(state, score);
+            std::lock_guard<std::mutex> lk(registry->mtx);
+            registry->inFlight--;
+            registry->cv.notify_all();
+        }).detach();
     }
 
     Status GetStatus() const { return m_state->status.load(); }
@@ -56,6 +93,7 @@ public:
 
 private:
     std::shared_ptr<SharedState> m_state;
+    std::shared_ptr<Registry>    m_registry;
 
     // 워커는 자신이 소유한 state에만 접근한다(this 캡처 없음).
     static void Worker(std::shared_ptr<SharedState> state, int score) {
