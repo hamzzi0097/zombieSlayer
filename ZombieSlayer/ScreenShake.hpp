@@ -2,11 +2,16 @@
 #include "ObjectBase.hpp"
 #include <cstdlib>
 
+// [ScreenShake 컴포넌트]
+// 화면 흔들림 offset을 계산해 제공한다(직접 렌더하지 않음 — 변환형 이펙트).
+// screenShakeObject에 부착되어 매 프레임 Update로 offset을 갱신하고,
+// GameLoop::Render가 GetPixelOffset()을 읽어 뷰포트를 통째로 이동시킨다.
+//
+// Trigger는 BombSpawner가 콜백으로 배선해 인스턴스로 호출하고, GetPixelOffset은
+// GameLoop이 핸들로 호출한다. (static 싱글톤 제거 — 프로젝트의 DI/콜백 패턴과 일관)
 class ScreenShake : public Component
 {
 private:
-    static ScreenShake* s_screenShake;
-
     float duration = 0.0f;
     float timer = 0.0f;
     float power = 0.0f;
@@ -14,38 +19,22 @@ private:
     XMFLOAT2 offset = { 0.0f, 0.0f };
 
 public:
-    ScreenShake()
+    ScreenShake() {}
+
+    void Trigger(float shakeDuration = 0.25f, float shakePower = 0.04f)
     {
-        s_screenShake = this;
+        duration = shakeDuration;
+        timer = shakeDuration;
+        power = shakePower;
     }
 
-    ~ScreenShake()
-    {
-        if (s_screenShake == this)
-            s_screenShake = nullptr;
-    }
+    XMFLOAT2 GetOffset() const { return offset; }
 
-    static void Trigger(float shakeDuration = 0.25f, float shakePower = 0.04f)
+    XMFLOAT2 GetPixelOffset(float width, float height) const
     {
-        if (!s_screenShake) return;
-
-        s_screenShake->duration = shakeDuration;
-        s_screenShake->timer = shakeDuration;
-        s_screenShake->power = shakePower;
-    }
-
-    static XMFLOAT2 GetOffset()
-    {
-        if (!s_screenShake) return { 0.0f, 0.0f };
-        return s_screenShake->offset;
-    }
-
-    static XMFLOAT2 GetPixelOffset(float width, float height)
-    {
-        XMFLOAT2 shakeOffset = GetOffset();
         return {
-            shakeOffset.x * width * 0.5f,
-            shakeOffset.y * height * 0.5f
+            offset.x * width * 0.5f,
+            offset.y * height * 0.5f
         };
     }
 

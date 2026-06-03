@@ -4,7 +4,7 @@
 #include "Material.hpp"
 #include "MeleeMonsterControl.hpp"
 #include "RangedMonsterControl.hpp"
-#include "ScreenShake.hpp"
+#include <functional>
 
 enum class BombState
 {
@@ -35,6 +35,10 @@ private:
     int damage = 5;
 
 public:
+    // 폭발 시점에 호출되는 콜백 (이펙트 연출용). GameLoop/BombSpawner가 배선.
+    // Bomb은 무엇이 연결됐는지(ScreenShake 등) 모른다 — 결합도 0.
+    std::function<void()> onExplode;
+
     Bomb(std::vector<GameObject*>* world, ShaderSet colorShader, ShaderSet textureShader,
         Texture* bombTexture = nullptr, Texture* effectTexture = nullptr, Mesh* effectMesh = nullptr)
     {
@@ -85,7 +89,7 @@ public:
             if (fuseTimer <= 0.0f)
             {
                 ApplyDamage();
-                ScreenShake::Trigger(0.25f, 0.04f);
+                if (onExplode) onExplode();
                 state = BombState::Exploding;
                 explosionTimer = explosionDuration;
                 SwitchToExplosionEffect();

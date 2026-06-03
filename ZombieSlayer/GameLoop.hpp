@@ -85,6 +85,7 @@ public:
 
     // screen 흔들리는 역할
     GameObject* screenShakeObject = nullptr;
+    ScreenShake* screenShake = nullptr;   // 핸들 (screenShakeObject가 소유)
 
     // StatsUI 데이터 소스 — 주소를 StatsUI에 넘겨 매 프레임 읽게 한다.
     // 통계 데이터 소스 — 주소를 StatsUIUpdater/ResultUIUpdater에 넘겨 매 프레임 읽게 한다.
@@ -300,7 +301,8 @@ public:
 
         // 스크린 흔들리는 오브젝트
         screenShakeObject = new GameObject(0.0f, 0.0f, 0.0f);
-        screenShakeObject->AddComponent(new ScreenShake());
+        screenShake = new ScreenShake();
+        screenShakeObject->AddComponent(screenShake);
 
         return true;
     }
@@ -421,7 +423,8 @@ private:
                 shader, textureShader,
                 useBombTexture ? bombTexture : nullptr,
                 useBombTexture ? bombEffectTexture : nullptr,
-                useBombTexture ? bombEffectSpriteMesh : bombMesh
+                useBombTexture ? bombEffectSpriteMesh : bombMesh,
+                screenShake
             ));
             player->AddComponent(new CircleCollider(playerColliderRadius, CollisionLayer::Player));
 
@@ -595,7 +598,7 @@ private:
             float col[] = { 0.1f, 0.2f, 0.3f, 1.0f };
             gfx->ImmediateContext->ClearRenderTargetView(gfx->RTV, col);
 
-            XMFLOAT2 screenShakeOffset = ScreenShake::GetPixelOffset((float)win.Width, (float)win.Height);
+            XMFLOAT2 screenShakeOffset = screenShake->GetPixelOffset((float)win.Width, (float)win.Height);
             D3D11_VIEWPORT vp = { screenShakeOffset.x, screenShakeOffset.y, (float)win.Width, (float)win.Height, 0, 1 };
             gfx->ImmediateContext->RSSetViewports(1, &vp);
             gfx->ImmediateContext->OMSetRenderTargets(1, &gfx->RTV, nullptr);
