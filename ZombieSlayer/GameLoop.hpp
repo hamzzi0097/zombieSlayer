@@ -461,6 +461,10 @@ private:
                 health->onDamaged = [this]() { hitEffect->Trigger(); };
             }
 
+            // 이전 라운드 사망 직전 Trigger()로 남은 피격 이펙트 페이드 값 초기화.
+            // (없으면 재시작 첫 프레임에 빨간 이펙트가 한 번 번쩍임)
+            if (hitEffect) hitEffect->Reset();
+
             break;
         }
         case State::GameOver:
