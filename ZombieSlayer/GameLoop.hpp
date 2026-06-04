@@ -465,6 +465,10 @@ private:
             // (없으면 재시작 첫 프레임에 빨간 이펙트가 한 번 번쩍임)
             if (hitEffect) hitEffect->Reset();
 
+            // 이전 라운드에서 남은 화면 흔들림 상태 초기화.
+            // (폭탄 폭발 직후 사망 시 재시작 첫 프레임에 화면이 잠깐 흔들리는 것 방지)
+            if (screenShake) screenShake->Reset();
+
             break;
         }
         case State::GameOver:
