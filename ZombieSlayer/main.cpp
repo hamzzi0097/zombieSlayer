@@ -1,10 +1,21 @@
 #pragma comment(linker, "/entry:WinMainCRTStartup /subsystem:console")
 #include "GameLoop.hpp"
+#include "ScreenShakeEffect.hpp"
 #include "MeshRenderer.hpp"
-#include "PlayerControl.hpp"
+#include "PlayerController.hpp"
+#include "PlayerBulletController.hpp"
+#include "PlayerBulletSpawner.hpp"
+#include "Logger.hpp"
+#include "MonsterSpawner.hpp"
+#include "Collider.hpp"
+#include "MonsterBulletSpawner.hpp"
+#include "HeartUI.hpp"
+
+// GraphicsContext ì‹±ê¸€í†¤ ì¸ìŠ¤í„´ìŠ¤ ì •ì˜
+GraphicsContext* GraphicsContext::s_instance = nullptr;
 
 // -----------------------------------------------------------------------------
-// [À©µµ¿ì ¸Ş½ÃÁö Ã³¸®±â]
+// [ìœˆë„ìš° ë©”ì‹œì§€ ì²˜ë¦¬ê¸°]
 // -----------------------------------------------------------------------------
 LRESULT CALLBACK GlobalWndProc(HWND h, UINT m, WPARAM w, LPARAM l) {
     if (m == WM_DESTROY) PostQuitMessage(0);
@@ -12,30 +23,19 @@ LRESULT CALLBACK GlobalWndProc(HWND h, UINT m, WPARAM w, LPARAM l) {
 }
 
 // -----------------------------------------------------------------------------
-// [¸ŞÀÎ ¿£Æ®¸® Æ÷ÀÎÆ®]
+// [ë©”ì¸ ì—”íŠ¸ë¦¬ í¬ì¸íŠ¸]
 // -----------------------------------------------------------------------------
-int WINAPI WinMain(HINSTANCE hI, HINSTANCE, LPSTR, int nS) 
+int WINAPI WinMain(HINSTANCE hI, HINSTANCE, LPSTR, int nS)
 {
-    // ¿£Áø ¸Å´ÏÀú ÃÊ±âÈ­
+    // ì—”ì§„ ë§¤ë‹ˆì € ì´ˆê¸°í™”
     GameLoop gEngine;
-    gEngine.Initialize(hI, GlobalWndProc);
+    if (!gEngine.Initialize(hI, GlobalWndProc)) {
+        LOG_ERROR("Engine initialization failed.");
+        return -1;
+    }
 
-    D3D11_INPUT_ELEMENT_DESC ied[] = 
-    {
-        { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-        { "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 }
-    };
-
-    // ¼ÎÀÌ´õ ÄÄÆÄÀÏ ¹× »ı¼º
-    ShaderSet starShaders = gEngine.gfx.CompileAndCreate(L"effect.hlsl", 0, true, ied, 2);
-
-    // === ¿ÀºêÁ§Æ® »ı¼º ·ÎÁ÷ ===
-
-    // ¿£Áø ½ÇÇà (¸ŞÀÎ ·çÇÁ)
+    LOG_DEBUG("GameLoop Start!");
     gEngine.Run();
-
-    // ¸Ş¸ğ¸® ÇØÁ¦
-    starShaders.Release();
 
     return 0;
 }

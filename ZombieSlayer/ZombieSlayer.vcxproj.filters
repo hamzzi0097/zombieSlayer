@@ -18,6 +18,15 @@
     <ClCompile Include="main.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="MeleeMonsterController.hpp">
+      <Filter>헤더 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="RangedMonsterController.hpp">
+      <Filter>헤더 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="MonsterBulletSpawner.hpp">
+      <Filter>헤더 파일</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Framework.hpp">
@@ -41,7 +50,7 @@
     <ClInclude Include="ObjectBase.hpp">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="PlayerControl.hpp">
+    <ClInclude Include="PlayerController.hpp">
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="Timer.hpp">
@@ -50,9 +59,102 @@
     <ClInclude Include="WindowContext.hpp">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="PlayerBulletController.hpp">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="MonsterSpawner.hpp">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="PlayerBulletSpawner.hpp">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Collider.hpp">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Logger.hpp">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="MonsterBulletController.hpp">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="HeartUI.hpp">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="BombCooldownUI.hpp">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="HitEffect.hpp">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="PlayerHealth.hpp">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="BombController.hpp">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="BombSpawner.hpp">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="ScreenShakeEffect.hpp">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="TextUI.hpp">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="StatsUIUpdater.hpp">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="ResultUIUpdater.hpp">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="BlinkUIUpdater.hpp">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="AmmoUI.hpp">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="RemoteLogger.hpp">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
+    <None Include="bg.png">
+      <Filter>리소스 파일</Filter>
+    </None>
+    <None Include="bomb.png">
+      <Filter>리소스 파일</Filter>
+    </None>
+    <None Include="bomb_effect.png">
+      <Filter>리소스 파일</Filter>
+    </None>
+    <None Include="player.png">
+      <Filter>리소스 파일</Filter>
+    </None>
+    <None Include="spit.png">
+      <Filter>리소스 파일</Filter>
+    </None>
     <None Include="effect.hlsl">
+      <Filter>리소스 파일</Filter>
+    </None>
+    <None Include="texture.hlsl">
+      <Filter>리소스 파일</Filter>
+    </None>
+    <None Include="uiGradient.hlsl">
+      <Filter>리소스 파일</Filter>
+    </None>
+    <None Include="DeadMosquito.png">
+      <Filter>리소스 파일</Filter>
+    </None>
+    <None Include="DeadStinkBug.png">
+      <Filter>리소스 파일</Filter>
+    </None>
+    <None Include="Mosquito.png">
+      <Filter>리소스 파일</Filter>
+    </None>
+    <None Include="StinkBug.png">
+      <Filter>리소스 파일</Filter>
+    </None>
+    <None Include="StinkBugBullet.png">
       <Filter>리소스 파일</Filter>
     </None>
   </ItemGroup>
