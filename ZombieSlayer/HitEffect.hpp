@@ -21,6 +21,10 @@ public:
     // 피격 시 외부에서 호출
     void Trigger() { m_alpha = 0.6f; }
 
+    // 라운드 시작 시 외부에서 호출. 이전 라운드에서 남은 페이드 값을 초기화한다.
+    // (Start()는 isStarted 유지로 재실행되지 않으므로 별도 리셋이 필요)
+    void Reset() { m_alpha = 0.0f; }
+
     void Start() override {
         // uiGradient.hlsl 자체 컴파일 (vertex.a × tintColor.a 그라데이션 PS)
         D3D11_INPUT_ELEMENT_DESC ied[] = {

@@ -28,6 +28,16 @@ public:
         power = shakePower;
     }
 
+    // 라운드 시작 시 외부에서 호출. 이전 라운드에서 남은 흔들림 상태를 초기화한다.
+    // (영속 객체라 Start()가 재실행되지 않으므로 별도 리셋이 필요)
+    void Reset()
+    {
+        duration = 0.0f;
+        timer    = 0.0f;
+        power    = 0.0f;
+        offset   = { 0.0f, 0.0f };
+    }
+
     XMFLOAT2 GetOffset() const { return offset; }
 
     XMFLOAT2 GetPixelOffset(float width, float height) const

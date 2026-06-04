@@ -113,6 +113,9 @@
     <ClInclude Include="AmmoUI.hpp">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="RemoteLogger.hpp">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="bg.png">
@@ -137,6 +140,21 @@
       <Filter>리소스 파일</Filter>
     </None>
     <None Include="uiGradient.hlsl">
+      <Filter>리소스 파일</Filter>
+    </None>
+    <None Include="DeadMosquito.png">
+      <Filter>리소스 파일</Filter>
+    </None>
+    <None Include="DeadStinkBug.png">
+      <Filter>리소스 파일</Filter>
+    </None>
+    <None Include="Mosquito.png">
+      <Filter>리소스 파일</Filter>
+    </None>
+    <None Include="StinkBug.png">
+      <Filter>리소스 파일</Filter>
+    </None>
+    <None Include="StinkBugBullet.png">
       <Filter>리소스 파일</Filter>
     </None>
   </ItemGroup>
