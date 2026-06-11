@@ -22,7 +22,7 @@ public:
         outOk = false;
         std::string result;
 
-        HINTERNET hSession = WinHttpOpen(L"ZombieSlayer/1.0",
+        HINTERNET hSession = WinHttpOpen(L"SpitMaster/1.0",
             WINHTTP_ACCESS_TYPE_AUTOMATIC_PROXY,
             WINHTTP_NO_PROXY_NAME, WINHTTP_NO_PROXY_BYPASS, 0);
         if (!hSession) return result;
