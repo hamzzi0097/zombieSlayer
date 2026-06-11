@@ -112,7 +112,7 @@ SpitMaster/
 ## 🚀 빌드 및 실행
 
 1. `ZombieSlayer.sln`을 **Visual Studio 2022**로 열기
-2. 구성: `x64 / Debug` 또는 `x64 / Release`
+2. 구성: `x64 / Debug`
 3. 빌드 후 실행 — 셰이더(`.hlsl`)·이미지(`.png`)·사운드(`.mp3`)는 빌드 시 출력 폴더로 자동 복사됩니다
 
 > ⚠️ 실행 파일을 단독 배포할 경우, 같은 폴더에 `.hlsl` / `.png` / `.mp3` 리소스가 함께 있어야 합니다.

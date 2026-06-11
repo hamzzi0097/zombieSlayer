@@ -113,9 +113,6 @@
     <ClInclude Include="AmmoUI.hpp">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="AudioSource.hpp">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
     <ClInclude Include="AudioSystem.hpp">
       <Filter>헤더 파일</Filter>
     </ClInclude>
