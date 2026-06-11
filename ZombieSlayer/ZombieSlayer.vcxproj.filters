@@ -113,6 +113,12 @@
     <ClInclude Include="AmmoUI.hpp">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="AudioSource.hpp">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="AudioSystem.hpp">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
     <ClInclude Include="RemoteLogger.hpp">
       <Filter>헤더 파일</Filter>
     </ClInclude>
@@ -131,6 +137,9 @@
       <Filter>리소스 파일</Filter>
     </None>
     <None Include="spit.png">
+      <Filter>리소스 파일</Filter>
+    </None>
+    <None Include="spit.mp3">
       <Filter>리소스 파일</Filter>
     </None>
     <None Include="effect.hlsl">
