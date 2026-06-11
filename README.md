@@ -1,4 +1,4 @@
-# 🧟 ZombieSlayer
+# 🧟 SpitMaster
 
 > DirectX 11 기반 탑다운 슈터 — 밀려오는 좀비 떼를 막아라
 
@@ -12,7 +12,7 @@
 
 ## 🎮 게임 소개
 
-**ZombieSlayer**는 Win32 API와 DirectX 11로 제작된 탑다운 슈터 게임입니다.  
+**SpitMaster**는 Win32 API와 DirectX 11로 제작된 탑다운 슈터 게임입니다.  
 플레이어는 사방에서 밀려오는 좀비를 총알로 처치하며 생존을 이어갑니다.
 
 ---
@@ -55,7 +55,7 @@
 ## 📁 프로젝트 구조
 
 ```
-ZombieSlayer/
+SpitMaster/
 ├── src/
 │   ├── Core/           # GameLoop, GameManager
 │   ├── Components/     # ColliderComponent, RenderComponent 등
@@ -72,7 +72,7 @@ ZombieSlayer/
 1. Visual Studio 2022 에서 솔루션 파일 열기
 2. DirectX 11 SDK 설치 확인
 3. `x64 / Debug` 또는 `x64 / Release` 로 빌드
-4. `ZombieSlayer.exe` 실행
+4. `SpitMaster.exe` 실행
 
 ---
 

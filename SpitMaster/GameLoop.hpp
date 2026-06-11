@@ -413,7 +413,7 @@ private:
         switch (s) {
         case State::Lobby:
             LOG_DEBUG("State Enter: Lobby");
-            LOG_INFO("=== ZombieSlayer ===");
+            LOG_INFO("=== SpitMaster ===");
             LOG_INFO("Press SPACE to start / ESC to end game");
 
 
