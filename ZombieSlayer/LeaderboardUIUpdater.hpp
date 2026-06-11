@@ -42,8 +42,7 @@ public:
         for (size_t i = 0; i < m_rows.size(); ++i) {
             if (i < e.size()) {
                 char buf[48];
-                snprintf(buf, sizeof(buf), "%d. %s  %d",
-                         (int)i + 1, e[i].name.c_str(), e[i].score);
+                snprintf(buf, sizeof(buf), "%2d. %-10.10s %6d", (int)i + 1, e[i].name.c_str(), e[i].score);
                 m_rows[i]->SetText(buf);
             } else {
                 m_rows[i]->SetText("");
