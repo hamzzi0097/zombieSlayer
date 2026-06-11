@@ -20,7 +20,7 @@
 #include "BlinkUIUpdater.hpp"
 #include "AmmoUI.hpp"
 #include "Background.hpp"
-#include "AudioSource.hpp"
+#include "AudioSystem.hpp"
 #include "ScreenShakeEffect.hpp"
 #include "DeadMonsterController.hpp"
 #include "LeaderboardUIUpdater.hpp"
@@ -413,7 +413,7 @@ private:
         switch (s) {
         case State::Lobby:
             LOG_DEBUG("State Enter: Lobby");
-            LOG_INFO("=== ZombieSlayer ===");
+            LOG_INFO("=== SpitMaster ===");
             LOG_INFO("Press SPACE to start / ESC to end game");
 
 
@@ -447,12 +447,6 @@ private:
                 playerRotationOffset, playerScreenMargin
             ));
             player->AddComponent(new PlayerHealth(3, 1.5f));
-            AudioSource* attackAudioSource =
-                new AudioSource(&audioSystem, &spitSound, 0.3f);
-            player->AddComponent(attackAudioSource);
-            AudioSource* bombDeploymentAudioSource =
-                new AudioSource(&audioSystem, &bombDeploymentSound, 0.3f);
-            player->AddComponent(bombDeploymentAudioSource);
             bool usePlayerBulletTexture = playerBulletSpriteMesh && playerBulletTextureMaterial;
             player->AddComponent(new PlayerBulletSpawner(
                 &pendingObjects,
@@ -462,7 +456,7 @@ private:
                 usePlayerBulletTexture ? 0.0825f : 0.03f,
                 usePlayerBulletTexture ? 0.6f : 1.0f,
                 0.0f,
-                attackAudioSource
+                &audioSystem, &spitSound, 0.3f
             ));
             bool useBombTexture = bombSpriteMesh && bombEffectSpriteMesh && bombTexture && bombEffectTexture;
             player->AddComponent(new BombSpawner(
@@ -473,8 +467,8 @@ private:
                 useBombTexture ? bombEffectTexture : nullptr,
                 useBombTexture ? bombEffectSpriteMesh : bombMesh,
                 screenShake,
-                bombDeploymentAudioSource,
                 &audioSystem,
+                &bombDeploymentSound,
                 &bombSound
             ));
             player->AddComponent(new CircleCollider(playerColliderRadius, CollisionLayer::Player));

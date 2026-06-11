@@ -4,7 +4,7 @@
 #include "BombController.hpp"
 #include "Logger.hpp"
 #include "ScreenShakeEffect.hpp"
-#include "AudioSource.hpp"
+#include "AudioSystem.hpp"
 
 class BombSpawner : public Component
 {
@@ -19,9 +19,9 @@ private:
     Texture* bombTexture;
     Texture* effectTexture;
     ScreenShakeEffect* screenShake = nullptr;   // 참조 (소유 X) — 폭발 흔들림 배선용
-    AudioSource* deploymentAudioSource = nullptr; // 참조 (소유 X)
-    AudioSystem* audioSystem = nullptr;            // 참조 (소유 X)
-    const SoundClip* explosionSound = nullptr;     // 참조 (소유 X)
+    AudioSystem* audioSystem = nullptr;           // 참조 (소유 X)
+    const SoundClip* deploymentSound = nullptr;   // 참조 (소유 X) — 설치음
+    const SoundClip* explosionSound = nullptr;    // 참조 (소유 X) — 폭발음
 
     bool wasRightMouseDown = false;
     float cooldown = 1.0f;
@@ -32,8 +32,8 @@ public:
         Mesh* bombMesh, ShaderSet colorShader, ShaderSet textureShader,
         Texture* bombTexture = nullptr, Texture* effectTexture = nullptr, Mesh* effectMesh = nullptr,
         ScreenShakeEffect* screenShake = nullptr,
-        AudioSource* deploymentAudioSource = nullptr,
         AudioSystem* audioSystem = nullptr,
+        const SoundClip* deploymentSound = nullptr,
         const SoundClip* explosionSound = nullptr)
     {
         this->world = world;
@@ -45,8 +45,8 @@ public:
         this->bombTexture = bombTexture;
         this->effectTexture = effectTexture;
         this->screenShake = screenShake;
-        this->deploymentAudioSource = deploymentAudioSource;
         this->audioSystem = audioSystem;
+        this->deploymentSound = deploymentSound;
         this->explosionSound = explosionSound;
     }
 
@@ -95,21 +95,16 @@ private:
             bombTexture, effectTexture, effectMesh
         );
 
-        AudioSource* explosionAudioSource = nullptr;
-        if (audioSystem && explosionSound)
-        {
-            explosionAudioSource =
-                new AudioSource(audioSystem, explosionSound, 0.8f);
-            bomb->AddComponent(explosionAudioSource);
-        }
-
         // BombController는 연출 구현을 모르고 폭발 이벤트만 발생시킨다.
+        // 연출(흔들림·폭발음)은 GameLoop이 소유한 영속 객체를 콜백으로 캡처해 호출한다.
         ScreenShakeEffect* shake = screenShake;
-        bombComponent->onExplode = [shake, explosionAudioSource]() {
+        AudioSystem* audio = audioSystem;
+        const SoundClip* boom = explosionSound;
+        bombComponent->onExplode = [shake, audio, boom]() {
             if (shake)
                 shake->Trigger(0.25f, 0.04f);
-            if (explosionAudioSource)
-                explosionAudioSource->PlayOneShot();
+            if (audio && boom)
+                audio->PlayOneShot(*boom, 0.8f);
         };
         float bombScale = bombTexture ? 0.08f : 0.06f;
         bomb->scale = { bombScale, bombScale, 1.0f };
@@ -118,8 +113,8 @@ private:
 
         pendingObjects->push_back(bomb);
 
-        if (deploymentAudioSource)
-            deploymentAudioSource->PlayOneShot();
+        if (audioSystem && deploymentSound)
+            audioSystem->PlayOneShot(*deploymentSound, 0.3f);
 
         LOG_INFO("Bomb placed.");
     }
