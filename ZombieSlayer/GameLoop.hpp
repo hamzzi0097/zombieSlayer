@@ -56,6 +56,8 @@ public:
     ShaderSet textureShader; // 텍스처 매핑용 셰이더(texture.hlsl)
     AudioSystem audioSystem;
     SoundClip spitSound;
+    SoundClip bombSound;
+    SoundClip bombDeploymentSound;
 
     // 게임 내내 재사용하는 리소스 (Initialize에서 1회 생성)
     Mesh*          playerMesh     = nullptr;
@@ -153,8 +155,13 @@ public:
         if (!audioSystem.Initialize()) {
             LOG_WARN("Audio system initialization failed. Game will continue without sound.");
         }
-        else if (!spitSound.Load(L"spit.mp3")) {
-            LOG_WARN("Attack sound could not be loaded.");
+        else {
+            if (!spitSound.Load(L"spit.mp3"))
+                LOG_WARN("Attack sound could not be loaded.");
+            if (!bombSound.Load(L"bomb.mp3"))
+                LOG_WARN("Bomb explosion sound could not be loaded.");
+            if (!bombDeploymentSound.Load(L"bomb_deployment1.mp3"))
+                LOG_WARN("Bomb deployment sound could not be loaded.");
         }
 
         D3D11_INPUT_ELEMENT_DESC ied[] = {
@@ -440,6 +447,9 @@ private:
             AudioSource* attackAudioSource =
                 new AudioSource(&audioSystem, &spitSound, 0.3f);
             player->AddComponent(attackAudioSource);
+            AudioSource* bombDeploymentAudioSource =
+                new AudioSource(&audioSystem, &bombDeploymentSound, 0.3f);
+            player->AddComponent(bombDeploymentAudioSource);
             bool usePlayerBulletTexture = playerBulletSpriteMesh && playerBulletTextureMaterial;
             player->AddComponent(new PlayerBulletSpawner(
                 &pendingObjects,
@@ -459,7 +469,10 @@ private:
                 useBombTexture ? bombTexture : nullptr,
                 useBombTexture ? bombEffectTexture : nullptr,
                 useBombTexture ? bombEffectSpriteMesh : bombMesh,
-                screenShake
+                screenShake,
+                bombDeploymentAudioSource,
+                &audioSystem,
+                &bombSound
             ));
             player->AddComponent(new CircleCollider(playerColliderRadius, CollisionLayer::Player));
 

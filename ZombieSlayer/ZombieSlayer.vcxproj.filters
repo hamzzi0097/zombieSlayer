@@ -130,6 +130,12 @@
     <None Include="bomb.png">
       <Filter>리소스 파일</Filter>
     </None>
+    <None Include="bomb.mp3">
+      <Filter>리소스 파일</Filter>
+    </None>
+    <None Include="bomb_deployment1.mp3">
+      <Filter>리소스 파일</Filter>
+    </None>
     <None Include="bomb_effect.png">
       <Filter>리소스 파일</Filter>
     </None>

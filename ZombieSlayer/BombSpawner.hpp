@@ -4,6 +4,7 @@
 #include "BombController.hpp"
 #include "Logger.hpp"
 #include "ScreenShakeEffect.hpp"
+#include "AudioSource.hpp"
 
 class BombSpawner : public Component
 {
@@ -18,6 +19,9 @@ private:
     Texture* bombTexture;
     Texture* effectTexture;
     ScreenShakeEffect* screenShake = nullptr;   // 참조 (소유 X) — 폭발 흔들림 배선용
+    AudioSource* deploymentAudioSource = nullptr; // 참조 (소유 X)
+    AudioSystem* audioSystem = nullptr;            // 참조 (소유 X)
+    const SoundClip* explosionSound = nullptr;     // 참조 (소유 X)
 
     bool wasRightMouseDown = false;
     float cooldown = 1.0f;
@@ -27,7 +31,10 @@ public:
     BombSpawner(std::vector<GameObject*>* world, std::vector<GameObject*>* pendingObjects,
         Mesh* bombMesh, ShaderSet colorShader, ShaderSet textureShader,
         Texture* bombTexture = nullptr, Texture* effectTexture = nullptr, Mesh* effectMesh = nullptr,
-        ScreenShakeEffect* screenShake = nullptr)
+        ScreenShakeEffect* screenShake = nullptr,
+        AudioSource* deploymentAudioSource = nullptr,
+        AudioSystem* audioSystem = nullptr,
+        const SoundClip* explosionSound = nullptr)
     {
         this->world = world;
         this->pendingObjects = pendingObjects;
@@ -38,6 +45,9 @@ public:
         this->bombTexture = bombTexture;
         this->effectTexture = effectTexture;
         this->screenShake = screenShake;
+        this->deploymentAudioSource = deploymentAudioSource;
+        this->audioSystem = audioSystem;
+        this->explosionSound = explosionSound;
     }
 
     void Start() override {}
@@ -80,19 +90,36 @@ private:
             pOwner->pos.z
         );
 
-        BombController* bombComponent = new BombController(world, colorShader, textureShader, bombTexture, effectTexture, effectMesh);
-        // 폭발 연출 배선: Bomb은 ScreenShakeEffect를 모르고 콜백만 노출
-        if (screenShake)
+        BombController* bombComponent = new BombController(
+            world, colorShader, textureShader,
+            bombTexture, effectTexture, effectMesh
+        );
+
+        AudioSource* explosionAudioSource = nullptr;
+        if (audioSystem && explosionSound)
         {
-            ScreenShakeEffect* shake = screenShake;
-            bombComponent->onExplode = [shake]() { shake->Trigger(0.25f, 0.04f); };
+            explosionAudioSource =
+                new AudioSource(audioSystem, explosionSound, 0.8f);
+            bomb->AddComponent(explosionAudioSource);
         }
+
+        // BombController는 연출 구현을 모르고 폭발 이벤트만 발생시킨다.
+        ScreenShakeEffect* shake = screenShake;
+        bombComponent->onExplode = [shake, explosionAudioSource]() {
+            if (shake)
+                shake->Trigger(0.25f, 0.04f);
+            if (explosionAudioSource)
+                explosionAudioSource->PlayOneShot();
+        };
         float bombScale = bombTexture ? 0.08f : 0.06f;
         bomb->scale = { bombScale, bombScale, 1.0f };
         bomb->AddComponent(new MeshRenderer(bombMesh, bombComponent->GetMaterial()));
         bomb->AddComponent(bombComponent);
 
         pendingObjects->push_back(bomb);
+
+        if (deploymentAudioSource)
+            deploymentAudioSource->PlayOneShot();
 
         LOG_INFO("Bomb placed.");
     }
