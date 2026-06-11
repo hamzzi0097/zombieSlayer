@@ -20,6 +20,7 @@
 #include "BlinkUIUpdater.hpp"
 #include "AmmoUI.hpp"
 #include "Background.hpp"
+#include "AudioSource.hpp"
 #include "ScreenShakeEffect.hpp"
 #include "DeadMonsterController.hpp"
 #include "LeaderboardUIUpdater.hpp"
@@ -53,6 +54,10 @@ public:
 
     ShaderSet shader;
     ShaderSet textureShader; // 텍스처 매핑용 셰이더(texture.hlsl)
+    AudioSystem audioSystem;
+    SoundClip spitSound;
+    SoundClip bombSound;
+    SoundClip bombDeploymentSound;
 
     // 게임 내내 재사용하는 리소스 (Initialize에서 1회 생성)
     Mesh*          playerMesh     = nullptr;
@@ -127,6 +132,7 @@ public:
         delete monsterMaterial; monsterMaterial = nullptr;
         delete bombMesh;       bombMesh       = nullptr;
         delete screenShakeObject; screenShakeObject = nullptr;
+        audioSystem.Shutdown();
         GraphicsContext::Destroy();
         shader.Release();
         textureShader.Release();
@@ -145,6 +151,18 @@ public:
         if (!win.Initialize(hInst, w, h, wndProc)) return false;
 
         if (!GraphicsContext::Create(win.hWnd, w, h)) return false;
+
+        if (!audioSystem.Initialize()) {
+            LOG_WARN("Audio system initialization failed. Game will continue without sound.");
+        }
+        else {
+            if (!spitSound.Load(L"spit.mp3"))
+                LOG_WARN("Attack sound could not be loaded.");
+            if (!bombSound.Load(L"bomb.mp3"))
+                LOG_WARN("Bomb explosion sound could not be loaded.");
+            if (!bombDeploymentSound.Load(L"bomb_deployment1.mp3"))
+                LOG_WARN("Bomb deployment sound could not be loaded.");
+        }
 
         D3D11_INPUT_ELEMENT_DESC ied[] = {
         { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT,    0,  0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
@@ -352,6 +370,7 @@ public:
                 float dt = timer.GetDelta();
                 Input();
                 Update(dt);
+                audioSystem.Update();
                 Render();
             }
         }
@@ -428,6 +447,12 @@ private:
                 playerRotationOffset, playerScreenMargin
             ));
             player->AddComponent(new PlayerHealth(3, 1.5f));
+            AudioSource* attackAudioSource =
+                new AudioSource(&audioSystem, &spitSound, 0.3f);
+            player->AddComponent(attackAudioSource);
+            AudioSource* bombDeploymentAudioSource =
+                new AudioSource(&audioSystem, &bombDeploymentSound, 0.3f);
+            player->AddComponent(bombDeploymentAudioSource);
             bool usePlayerBulletTexture = playerBulletSpriteMesh && playerBulletTextureMaterial;
             player->AddComponent(new PlayerBulletSpawner(
                 &pendingObjects,
@@ -436,7 +461,8 @@ private:
                 win.hWnd, &win.Width, &win.Height,
                 usePlayerBulletTexture ? 0.0825f : 0.03f,
                 usePlayerBulletTexture ? 0.6f : 1.0f,
-                0.0f
+                0.0f,
+                attackAudioSource
             ));
             bool useBombTexture = bombSpriteMesh && bombEffectSpriteMesh && bombTexture && bombEffectTexture;
             player->AddComponent(new BombSpawner(
@@ -446,7 +472,10 @@ private:
                 useBombTexture ? bombTexture : nullptr,
                 useBombTexture ? bombEffectTexture : nullptr,
                 useBombTexture ? bombEffectSpriteMesh : bombMesh,
-                screenShake
+                screenShake,
+                bombDeploymentAudioSource,
+                &audioSystem,
+                &bombSound
             ));
             player->AddComponent(new CircleCollider(playerColliderRadius, CollisionLayer::Player));
 
