@@ -134,7 +134,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AmmoUI.hpp" />
-    <ClInclude Include="AudioSource.hpp" />
     <ClInclude Include="AudioSystem.hpp" />
     <ClInclude Include="Background.hpp" />
     <ClInclude Include="BlinkUIUpdater.hpp" />

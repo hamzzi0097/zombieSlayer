@@ -4,7 +4,7 @@
 #include "PlayerBulletController.hpp"
 #include "Collider.hpp"
 #include "Logger.hpp"
-#include "AudioSource.hpp"
+#include "AudioSystem.hpp"
 
 // 플레이어의 탄환 오브젝트 생성 컴포넌트
 class PlayerBulletSpawner : public Component
@@ -20,7 +20,9 @@ class PlayerBulletSpawner : public Component
     float bulletScale;
     float bulletColliderRadius;
     float bulletRotationOffset;
-    AudioSource* attackAudioSource;
+    AudioSystem* audioSystem;        // 참조 (소유 X) — 발사음 재생
+    const SoundClip* attackSound;    // 참조 (소유 X)
+    float attackVolume;
 
     int maxAmmo = 10;
     int currentAmmo = 10;
@@ -36,7 +38,8 @@ public:
         Material* bulletMaterial, HWND hWnd, int* width, int* height,
         float bulletScale = 0.03f, float bulletColliderRadius = 1.0f,
         float bulletRotationOffset = 0.0f,
-        AudioSource* attackAudioSource = nullptr) : Component()
+        AudioSystem* audioSystem = nullptr, const SoundClip* attackSound = nullptr,
+        float attackVolume = 0.3f) : Component()
     {
         this->pendingObjects = pendingObjects;
         this->bulletMesh = bulletMesh;
@@ -47,7 +50,9 @@ public:
         this->bulletScale = bulletScale;
         this->bulletColliderRadius = bulletColliderRadius;
         this->bulletRotationOffset = bulletRotationOffset;
-        this->attackAudioSource = attackAudioSource;
+        this->audioSystem = audioSystem;
+        this->attackSound = attackSound;
+        this->attackVolume = attackVolume;
 
         wasLeftMouseDown = false;
     }
@@ -180,8 +185,8 @@ private:
             // world 순회 중 직접 추가하지 않고, 다음 Update에서 추가되도록 예약
             pendingObjects->push_back(bullet);
 
-            if (attackAudioSource)
-                attackAudioSource->PlayOneShot();
+            if (audioSystem && attackSound)
+                audioSystem->PlayOneShot(*attackSound, attackVolume);
         }
 
     }
